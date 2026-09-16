@@ -26,6 +26,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.william278.cloplib.operation.OperationType;
+import net.william278.huskclaims.claim.ClaimOperationTypes;
 import net.william278.huskclaims.trust.TrustLevel;
 import org.jetbrains.annotations.NotNull;
 
@@ -79,7 +80,9 @@ public class TrustLevels {
                             OperationType.PLAYER_DAMAGE_ENTITY,
                             OperationType.FILL_BUCKET,
                             OperationType.EMPTY_BUCKET,
-                            OperationType.USE_SPAWN_EGG
+                            OperationType.USE_SPAWN_EGG,
+                            ClaimOperationTypes.DISPLAY_ENTITY_EDIT,
+                            ClaimOperationTypes.ITEM_PICKUP
                     ))
                     .privileges(List.of(
                             TrustLevel.Privilege.MANAGE_TRUSTEES,
@@ -120,7 +123,9 @@ public class TrustLevels {
                             OperationType.PLAYER_DAMAGE_ENTITY,
                             OperationType.FILL_BUCKET,
                             OperationType.EMPTY_BUCKET,
-                            OperationType.USE_SPAWN_EGG
+                            OperationType.USE_SPAWN_EGG,
+                            ClaimOperationTypes.DISPLAY_ENTITY_EDIT,
+                            ClaimOperationTypes.ITEM_PICKUP
                     ))
                     .build(),
 
@@ -140,7 +145,8 @@ public class TrustLevels {
                             OperationType.BREAK_VEHICLE,
                             OperationType.ENDER_PEARL_TELEPORT,
                             OperationType.START_RAID,
-                            OperationType.CONTAINER_OPEN
+                            OperationType.CONTAINER_OPEN,
+                            ClaimOperationTypes.ITEM_PICKUP
                     ))
                     .build(),
 
@@ -159,7 +165,8 @@ public class TrustLevels {
                             OperationType.PLACE_VEHICLE,
                             OperationType.BREAK_VEHICLE,
                             OperationType.ENDER_PEARL_TELEPORT,
-                            OperationType.START_RAID
+                            OperationType.START_RAID,
+                            ClaimOperationTypes.ITEM_PICKUP
                     ))
                     .build()
     );
@@ -187,7 +194,9 @@ public class TrustLevels {
             OperationType.PLAYER_DAMAGE_ENTITY,
             OperationType.FILL_BUCKET,
             OperationType.EMPTY_BUCKET,
-            OperationType.USE_SPAWN_EGG
+            OperationType.USE_SPAWN_EGG,
+            ClaimOperationTypes.DISPLAY_ENTITY_EDIT,
+            ClaimOperationTypes.ITEM_PICKUP
     );
 
     @NotNull
