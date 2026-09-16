@@ -26,6 +26,7 @@ import net.william278.cloplib.operation.OperationPosition;
 import net.william278.cloplib.operation.OperationType;
 import net.william278.cloplib.operation.OperationUser;
 import net.william278.huskclaims.BukkitHuskClaims;
+import net.william278.huskclaims.claim.ClaimOperationTypes;
 import net.william278.huskclaims.moderation.SignListener;
 import net.william278.huskclaims.position.Position;
 import net.william278.huskclaims.position.World;
@@ -37,10 +38,14 @@ import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Hanging;
 import org.bukkit.entity.Item;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Tameable;
+import org.bukkit.entity.Vehicle;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -49,9 +54,13 @@ import org.bukkit.event.block.BlockIgniteEvent;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityInteractEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.entity.EntityPickupItemEvent;
+import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.player.*;
+import org.bukkit.event.vehicle.VehicleMoveEvent;
 import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -119,8 +128,6 @@ public class BukkitListener extends BukkitOperationListener implements BukkitPet
         }
     }
 
-    // Fix: End crystals are not treated as explosion in wilderness by cloplib, so their
-    // block damage bypasses explosion_damage_terrain. Override here to handle them correctly.
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     public void onEndCrystalExplode(@NotNull EntityExplodeEvent e) {
         if (!e.getEntity().getType().getKey().getKey().equals("end_crystal")) {
@@ -132,6 +139,104 @@ public class BukkitListener extends BukkitOperationListener implements BukkitPet
                         getPosition(block.getLocation())
                 )
         ));
+    }
+
+    @Override
+    @EventHandler(ignoreCancelled = true)
+    public void onVehicleMove(@NotNull VehicleMoveEvent e) {
+        final Location from = e.getFrom();
+        final Location to = e.getTo();
+        if (from.getBlock().equals(to.getBlock()) && from.distance(to) < 0.1d) {
+            return;
+        }
+        final Vehicle vehicle = e.getVehicle();
+        final Optional<Player> blocked = vehicle.getPassengers().stream()
+                .filter(Player.class::isInstance)
+                .map(Player.class::cast)
+                .filter(player -> !isPlayerNpc(player))
+                .filter(player -> plugin.cancelMovement(
+                        plugin.getOnlineUser(player), getPosition(from), getPosition(to)))
+                .findFirst();
+        if (blocked.isEmpty()) {
+            return;
+        }
+        vehicle.getPassengers().stream()
+                .filter(Player.class::isInstance)
+                .map(Player.class::cast)
+                .forEach(Player::leaveVehicle);
+        vehicle.teleport(from);
+    }
+
+    @Override
+    @EventHandler(ignoreCancelled = true)
+    public void onPlayerInteractEntity(@NotNull PlayerInteractEntityEvent e) {
+        if (!isDisplayEntity(e.getRightClicked())) {
+            super.onPlayerInteractEntity(e);
+            return;
+        }
+        if (cancelDisplayEdit(e.getPlayer(), e.getRightClicked(), OperationType.ENTITY_INTERACT)) {
+            e.setCancelled(true);
+        }
+    }
+
+    @Override
+    @EventHandler(ignoreCancelled = true)
+    public void onPlayerArmorStand(@NotNull PlayerArmorStandManipulateEvent e) {
+        if (cancelDisplayEdit(e.getPlayer(), e.getRightClicked(), OperationType.ENTITY_INTERACT)) {
+            e.setCancelled(true);
+        }
+    }
+
+    @Override
+    @EventHandler(ignoreCancelled = true)
+    public void onEntityDamageEntity(@NotNull EntityDamageByEntityEvent e) {
+        final Entity target = e.getEntity();
+        final Entity damager = e.getDamager();
+        final Entity source = damager instanceof Projectile projectile
+                && projectile.getShooter() instanceof Entity shooter ? shooter : damager;
+        if (source instanceof Mob && target instanceof Mob) {
+            return;
+        }
+        final Optional<Player> player = getPlayerSource(damager);
+        if (player.isPresent() && isDisplayEntity(target)) {
+            if (cancelDisplayEdit(player.get(), target, OperationType.PLAYER_DAMAGE_PERSISTENT_ENTITY)) {
+                e.setCancelled(true);
+            }
+            return;
+        }
+        super.onEntityDamageEntity(e);
+    }
+
+    @Override
+    @EventHandler(ignoreCancelled = true)
+    public void onPlayerBreakHangingEntity(@NotNull HangingBreakByEntityEvent e) {
+        final Optional<Player> player = getPlayerSource(e.getRemover());
+        if (player.isEmpty()) {
+            super.onPlayerBreakHangingEntity(e);
+            return;
+        }
+        if (cancelDisplayEdit(player.get(), e.getEntity(), OperationType.BREAK_HANGING_ENTITY)) {
+            e.setCancelled(true);
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
+    public void onPlayerPickupItem(@NotNull EntityPickupItemEvent e) {
+        if (!(e.getEntity() instanceof Player player)) {
+            return;
+        }
+        final Item item = e.getItem();
+        if (player.getUniqueId().equals(item.getOwner()) || player.getUniqueId().equals(item.getThrower())) {
+            return;
+        }
+        final Position position = BukkitHuskClaims.Adapter.adapt(item.getLocation());
+        final boolean customDenied = plugin.cancelOperation(Operation.of(
+                plugin.getOnlineUser(player), ClaimOperationTypes.ITEM_PICKUP, position));
+        final boolean legacyDenied = plugin.cancelOperation(Operation.of(
+                plugin.getOnlineUser(player), OperationType.ENTITY_INTERACT, position));
+        if (customDenied && legacyDenied) {
+            e.setCancelled(true);
+        }
     }
 
     @EventHandler
@@ -208,6 +313,20 @@ public class BukkitListener extends BukkitOperationListener implements BukkitPet
 
     private boolean isClaimed(@NotNull Block block) {
         return plugin.getClaimAt(BukkitHuskClaims.Adapter.adapt(block.getLocation())).isPresent();
+    }
+
+    private boolean cancelDisplayEdit(@NotNull Player player, @NotNull Entity entity,
+                                      @NotNull OperationType fallback) {
+        final Position position = BukkitHuskClaims.Adapter.adapt(entity.getLocation());
+        final boolean customDenied = plugin.cancelOperation(Operation.of(
+                plugin.getOnlineUser(player), ClaimOperationTypes.DISPLAY_ENTITY_EDIT, position));
+        final boolean fallbackDenied = plugin.cancelOperation(Operation.of(
+                plugin.getOnlineUser(player), fallback, position));
+        return customDenied && fallbackDenied;
+    }
+
+    private boolean isDisplayEntity(@NotNull Entity entity) {
+        return entity instanceof ArmorStand || entity instanceof Hanging;
     }
         
     @EventHandler(ignoreCancelled = true)
