@@ -91,7 +91,7 @@ public interface ClaimHandler extends Handler {
             if (getPlugin().getSettings().getClaims().isSendEntryMessage()
                     && !tc.isChildClaim() && !fc.isChildClaim()) {
                 getPlugin().getLocales().getLocale("claim_entered", tc.getOwnerName(world, getPlugin()))
-                        .ifPresent(online::sendMessage);
+                        .ifPresent(message -> online.getAudience().sendActionBar(message.toComponent()));
             }
             return false;
         } else if (toClaim.isPresent()) {
@@ -106,7 +106,7 @@ public interface ClaimHandler extends Handler {
             // Send an entry message
             if (getPlugin().getSettings().getClaims().isSendEntryMessage() && !tc.isChildClaim()) {
                 getPlugin().getLocales().getLocale("claim_entered", tc.getOwnerName(world, getPlugin()))
-                        .ifPresent(online::sendMessage);
+                        .ifPresent(message -> online.getAudience().sendActionBar(message.toComponent()));
             }
         } else if (fromClaim.isPresent()) {
             // Handle claim -> wilderness movement
@@ -118,7 +118,7 @@ public interface ClaimHandler extends Handler {
             // Send an exit message
             if (getPlugin().getSettings().getClaims().isSendExitMessage() && !fc.isChildClaim()) {
                 getPlugin().getLocales().getLocale("claim_exited", fc.getOwnerName(world, getPlugin()))
-                        .ifPresent(online::sendMessage);
+                        .ifPresent(message -> online.getAudience().sendActionBar(message.toComponent()));
             }
         }
         return false;

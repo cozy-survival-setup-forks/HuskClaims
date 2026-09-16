@@ -43,6 +43,7 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
@@ -56,6 +57,8 @@ import java.util.concurrent.ConcurrentMap;
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Claim implements Highlightable {
+
+    private static final String TIMED_TRUST_PREFIX = "huskclaims:timed_trust:";
 
     /**
      * The claim region
@@ -300,6 +303,34 @@ public class Claim implements Highlightable {
             throw new IllegalArgumentException("Cannot set trust level for banned user");
         }
         trustedUsers.put(uuid, level.getId());
+        clearTimedTrust(uuid);
+    }
+
+    public void setTimedTrust(@NotNull UUID uuid, @NotNull TrustLevel level, @NotNull Instant expiresAt) {
+        if (bannedUsers.containsKey(uuid)) {
+            throw new IllegalArgumentException("Cannot set trust level for banned user");
+        }
+        trustedUsers.remove(uuid);
+        getMetadata().put(timedTrustKey(uuid), level.getId() + ":" + expiresAt.toEpochMilli());
+    }
+
+    public boolean clearTimedTrust(@NotNull UUID uuid) {
+        return getMetadata().remove(timedTrustKey(uuid)) != null;
+    }
+
+    @NotNull
+    public Set<UUID> getTimedTrustedUsers() {
+        final Set<UUID> users = Sets.newHashSet();
+        getMetadata().keySet().stream()
+                .filter(key -> key.startsWith(TIMED_TRUST_PREFIX))
+                .map(key -> key.substring(TIMED_TRUST_PREFIX.length()))
+                .forEach(value -> {
+                    try {
+                        users.add(UUID.fromString(value));
+                    } catch (IllegalArgumentException ignored) {
+                    }
+                });
+        return users;
     }
 
     /**
@@ -357,6 +388,7 @@ public class Claim implements Highlightable {
         switch (trustable) {
             case User user -> {
                 trustedUsers.remove(user.getUuid());
+                clearTimedTrust(user.getUuid());
                 world.cacheUser(user);
             }
             case UserGroup group -> trustedGroups.remove(group.name());
@@ -420,6 +452,11 @@ public class Claim implements Highlightable {
         // Handle explicit user permissions
         if (trustedUsers.containsKey(user.getUuid())) {
             return plugin.getTrustLevel(trustedUsers.get(user.getUuid()));
+        }
+
+        final Optional<TrustLevel> timedLevel = getTimedTrustLevel(user.getUuid(), plugin);
+        if (timedLevel.isPresent()) {
+            return timedLevel;
         }
 
         // Check if the user is in a trusted group
@@ -500,7 +537,36 @@ public class Claim implements Highlightable {
             throw new IllegalArgumentException("Cannot ban self from claim");
         }
         trustedUsers.remove(user.getUuid());
+        clearTimedTrust(user.getUuid());
         bannedUsers.put(user.getUuid(), arbiter.getUuid());
+    }
+
+    private Optional<TrustLevel> getTimedTrustLevel(@NotNull UUID uuid, @NotNull HuskClaims plugin) {
+        final String key = timedTrustKey(uuid);
+        final String value = getMetadata().get(key);
+        if (value == null) {
+            return Optional.empty();
+        }
+        final int separator = value.lastIndexOf(':');
+        if (separator < 1) {
+            getMetadata().remove(key);
+            return Optional.empty();
+        }
+        try {
+            if (Long.parseLong(value.substring(separator + 1)) <= System.currentTimeMillis()) {
+                getMetadata().remove(key);
+                return Optional.empty();
+            }
+            return plugin.getTrustLevel(value.substring(0, separator));
+        } catch (NumberFormatException e) {
+            getMetadata().remove(key);
+            return Optional.empty();
+        }
+    }
+
+    @NotNull
+    private static String timedTrustKey(@NotNull UUID uuid) {
+        return TIMED_TRUST_PREFIX + uuid;
     }
 
     /**
