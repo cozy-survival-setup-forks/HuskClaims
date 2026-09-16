@@ -510,6 +510,10 @@ public class ClaimWorld {
             return false;
         }
 
+        if (plugin.hasPrivateClaimBypassPermission(user)) {
+            return false;
+        }
+
         // Check if user is ignoring claims and has permission to bypass private claims
         if (plugin.isIgnoringClaims(user) && plugin.hasIgnoreClaimsPrivatePermission(user)) {
             return false;

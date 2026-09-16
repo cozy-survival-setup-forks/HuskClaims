@@ -342,8 +342,8 @@ This is a table of HuskClaims commands, how to use them, their required permissi
         </tr>
         <tr>
             <td><code>/buyclaimblocks</code></td>
-            <td><code>/buyclaimblocks &lt;amount&gt;</code></td>
-            <td>Buy claim blocks for money. Requires the Vault hook to use.</td>
+            <td><code>/buyclaimblocks [amount]</code></td>
+            <td>Open the claim-block shop, or buy an amount directly. Requires the Vault hook to use.</td>
             <td><code>huskclaims.command.buyclaimblocks</code></td>
             <td align="center">✅</td>
         </tr>
@@ -510,7 +510,8 @@ The following commands have aliases that can also be used for convenience:
 | `/unclaimall`      | `/abandonallclaims`                        |
 | `/childclaim`      | `/subdivideclaims`                         |
 | `/restrictclaim`   | `/restrictchildclaim`, `/restrictsubclaim` |
-| `/claimblocks`     | `/adjustclaimblocks`                       |
+| `/claimblocks`     | `/adjustclaimblocks`, `/modifyclaimblocks` |
+| `/buyclaimblocks`  | `/buyclaimblock`, `/claimshop`, `/claimblockshop` |
 | `/permissiontrust` | `/managetrust` &dagger;                    |
 | `/transferpet`     | `/givepet`                                 |
 

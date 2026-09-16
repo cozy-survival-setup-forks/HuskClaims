@@ -612,7 +612,7 @@ public final class Settings {
             private boolean enabled = true;
 
             @Comment("The cost of buying 1 claim block")
-            private double costPerBlock = 1.0;
+            private double costPerBlock = 25.0;
         }
 
         private PlaceholderSettings placeholders = new PlaceholderSettings();

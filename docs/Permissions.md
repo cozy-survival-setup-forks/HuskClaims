@@ -62,6 +62,8 @@ These permissions control what users can bypass when they have the ignore claims
 | `huskclaims.command.ignoreclaims.operations.*` | Allow bypassing all operation types when ignoring claims.                                      |    ❌    |
 | `huskclaims.command.ignoreclaims.operations.<operation_type>` | Allow bypassing specific operation types when ignoring claims (e.g., `block_break`, `redstone_actuate`). |    ❌    |
 
+Use `huskclaims.bypass.private` to let staff enter private claims without enabling ignore-claims mode. This permission does not bypass claim bans.
+
 ## Flags
 These permissions restrict the use of flags.
 

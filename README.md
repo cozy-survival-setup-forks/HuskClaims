@@ -25,6 +25,19 @@
 
 **HuskClaims** is a clean, cross-server compatible grief prevention plugin/mod for Spigot/Paper and Fabric servers that you already know how to use. HuskClaims will bring claiming on your server into the 2020s with intuitive chat menus, cross-server synchronisation support, modern display block visualisation, user group and LuckPerms role trust management, and much more &mdash; achieved through a modular, performant design.
 
+## Cozy Survival Setup fork
+
+This fork is maintained for **Cozy Survival Setup** and targets Paper/Leaf 1.21.11. It includes:
+
+- a redesigned 45-slot claim-block shop opened with `/claimshop`, `/claimblockshop`, `/buyclaimblock`, or `/buyclaimblocks`;
+- left-click, right-click, and shift-click quantity controls plus custom chat input;
+- claim protections for armor stands, pressure plates, dragon eggs, campfires, and wind-charge buttons;
+- a separate `huskclaims.bypass.private` permission for private claims;
+- support for `/modifyclaimblocks add|remove <player> <amount>`; and
+- Paper/Leaf 1.21.11 metadata and a Paper-only build option.
+
+This is an independent fork; upstream support remains with the original project.
+
 ## Features
 **⭐ Works cross-server** &mdash; Works seamlessly cross-server. Manage/accrue claim blocks and list claims globally.
 
@@ -46,6 +59,14 @@ To build HuskClaims, simply run the following in the root of the repository (bui
 ```bash
 ./gradlew clean build
 ```
+
+To build only the Paper/Leaf version, use:
+
+```bash
+./gradlew -PpaperOnly clean :paper:build
+```
+
+The deployable JAR is written to `target/HuskClaims-Paper-*.jar`.
 
 ### License
 HuskClaims is licensed under the Apache 2.0 license.

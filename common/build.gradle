@@ -52,3 +52,11 @@ dependencies {
 
     annotationProcessor 'org.projectlombok:lombok:1.18.38'
 }
+
+if (rootProject.hasProperty('externalJavac')) {
+    tasks.register('compileClasspathJar', Jar) {
+        archiveClassifier.set('compile-classpath')
+        destinationDirectory.set(layout.buildDirectory.dir('classpath'))
+        from sourceSets.main.output
+    }
+}

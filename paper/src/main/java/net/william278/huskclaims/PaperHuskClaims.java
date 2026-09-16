@@ -24,6 +24,7 @@ import net.kyori.adventure.audience.Audience;
 import net.william278.huskclaims.highlighter.PaperBlockDisplayHighlighter;
 import net.william278.huskclaims.listener.ClaimsListener;
 import net.william278.huskclaims.listener.PaperListener;
+import net.william278.huskclaims.menu.ClaimShopMenu;
 import net.william278.huskclaims.position.Position;
 import net.william278.huskclaims.user.BukkitUser;
 import net.william278.huskclaims.user.OnlineUser;
@@ -62,6 +63,15 @@ public class PaperHuskClaims extends BukkitHuskClaims {
     @Override
     public ClaimsListener createListener() {
         return new PaperListener(this);
+    }
+
+    @Override
+    public boolean openClaimShop(@NotNull OnlineUser user) {
+        if (!(user instanceof BukkitUser bukkitUser)) {
+            return false;
+        }
+        new ClaimShopMenu(this, bukkitUser.getBukkitPlayer()).open();
+        return true;
     }
 
 }

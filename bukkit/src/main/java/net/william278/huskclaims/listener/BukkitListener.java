@@ -21,20 +21,35 @@ package net.william278.huskclaims.listener;
 
 import lombok.Getter;
 import net.william278.cloplib.listener.BukkitOperationListener;
+import net.william278.cloplib.operation.Operation;
 import net.william278.cloplib.operation.OperationPosition;
+import net.william278.cloplib.operation.OperationType;
 import net.william278.cloplib.operation.OperationUser;
 import net.william278.huskclaims.BukkitHuskClaims;
 import net.william278.huskclaims.moderation.SignListener;
+import net.william278.huskclaims.position.Position;
 import net.william278.huskclaims.position.World;
 import net.william278.huskclaims.user.User;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Tag;
+import org.bukkit.block.Block;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Tameable;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
+import org.bukkit.event.block.BlockFromToEvent;
+import org.bukkit.event.block.BlockIgniteEvent;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.EntityChangeBlockEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityInteractEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.event.world.WorldLoadEvent;
@@ -117,6 +132,82 @@ public class BukkitListener extends BukkitOperationListener implements BukkitPet
                         getPosition(block.getLocation())
                 )
         ));
+    }
+
+    @EventHandler
+    public void onClaimedArmorStandExplosion(@NotNull EntityDamageEvent e) {
+        if (!(e.getEntity() instanceof ArmorStand)
+                || (e.getCause() != EntityDamageEvent.DamageCause.ENTITY_EXPLOSION
+                && e.getCause() != EntityDamageEvent.DamageCause.BLOCK_EXPLOSION)) {
+            return;
+        }
+        if (plugin.getClaimAt(BukkitHuskClaims.Adapter.adapt(e.getEntity().getLocation())).isPresent()) {
+            e.setCancelled(true);
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onClaimedPressurePlate(@NotNull EntityInteractEvent e) {
+        if (!(e.getEntity() instanceof Item item) || !Tag.PRESSURE_PLATES.isTagged(e.getBlock().getType())) {
+            return;
+        }
+        final Position position = BukkitHuskClaims.Adapter.adapt(e.getBlock().getLocation());
+        if (plugin.getClaimAt(position).isEmpty()) {
+            return;
+        }
+        final Player thrower = Optional.ofNullable(item.getThrower()).map(Bukkit::getPlayer).orElse(null);
+        if (thrower == null || plugin.cancelOperation(Operation.of(
+                plugin.getOnlineUser(thrower), OperationType.BLOCK_INTERACT, position))) {
+            e.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onClaimedDragonEggInteract(@NotNull PlayerInteractEvent e) {
+        if ((e.getAction() != Action.RIGHT_CLICK_BLOCK && e.getAction() != Action.LEFT_CLICK_BLOCK)
+                || e.getClickedBlock() == null || e.getClickedBlock().getType() != Material.DRAGON_EGG) {
+            return;
+        }
+        final Position position = BukkitHuskClaims.Adapter.adapt(e.getClickedBlock().getLocation());
+        if (plugin.getClaimAt(position).isPresent() && plugin.cancelOperation(Operation.of(
+                plugin.getOnlineUser(e.getPlayer()), OperationType.BLOCK_INTERACT, position))) {
+            e.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onClaimedDragonEggTeleport(@NotNull EntityChangeBlockEvent e) {
+        if (e.getBlock().getType() == Material.DRAGON_EGG && isClaimed(e.getBlock())) {
+            e.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onClaimedDragonEggFlow(@NotNull BlockFromToEvent e) {
+        if (e.getBlock().getType() == Material.DRAGON_EGG && isClaimed(e.getBlock())) {
+            e.setCancelled(true);
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onClaimedCampfireIgnite(@NotNull BlockIgniteEvent e) {
+        final Block block = e.getBlock();
+        if (!Tag.CAMPFIRES.isTagged(block.getType()) || !isClaimed(block)) {
+            return;
+        }
+        final Entity igniter = e.getIgnitingEntity();
+        final Player player = igniter instanceof Player direct ? direct
+                : igniter instanceof Projectile projectile && projectile.getShooter() instanceof Player shooter
+                ? shooter : null;
+        final Position position = BukkitHuskClaims.Adapter.adapt(block.getLocation());
+        if (player == null || plugin.cancelOperation(Operation.of(
+                plugin.getOnlineUser(player), OperationType.BLOCK_PLACE, position))) {
+            e.setCancelled(true);
+        }
+    }
+
+    private boolean isClaimed(@NotNull Block block) {
+        return plugin.getClaimAt(BukkitHuskClaims.Adapter.adapt(block.getLocation())).isPresent();
     }
         
     @EventHandler(ignoreCancelled = true)

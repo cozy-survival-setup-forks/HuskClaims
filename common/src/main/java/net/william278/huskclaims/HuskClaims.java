@@ -37,6 +37,7 @@ import net.william278.huskclaims.pet.PetHandler;
 import net.william278.huskclaims.trust.GroupManager;
 import net.william278.huskclaims.trust.TrustTagManager;
 import net.william278.huskclaims.user.SavedUserProvider;
+import net.william278.huskclaims.user.OnlineUser;
 import net.william278.huskclaims.user.UserProvider;
 import net.william278.huskclaims.util.*;
 import org.intellij.lang.annotations.Subst;
@@ -152,6 +153,16 @@ public interface HuskClaims extends Task.Supplier, ConfigProvider, UserProvider,
      * @since 1.0
      */
     void disablePlugin();
+
+    /**
+     * Open the platform claim-block shop, if one is available.
+     *
+     * @param user the user opening the shop
+     * @return {@code true} if a shop was opened
+     */
+    default boolean openClaimShop(@NotNull OnlineUser user) {
+        return false;
+    }
 
     /**
      * Log a message to the console.

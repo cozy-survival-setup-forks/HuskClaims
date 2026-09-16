@@ -22,6 +22,7 @@ package net.william278.huskclaims.claim;
 import net.william278.cloplib.handler.Handler;
 import net.william278.cloplib.operation.Operation;
 import net.william278.cloplib.operation.OperationPosition;
+import net.william278.cloplib.operation.OperationType;
 import net.william278.cloplib.operation.OperationUser;
 import net.william278.cloplib.operation.OperationWorld;
 import net.william278.huskclaims.HuskClaims;
@@ -33,7 +34,6 @@ import net.william278.huskclaims.user.Preferences;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
-import net.william278.cloplib.operation.OperationType;
 
 /**
  * Handler for {@link Operation}s in {@link Claim}s
@@ -41,6 +41,9 @@ import net.william278.cloplib.operation.OperationType;
  * @since 1.0
  */
 public interface ClaimHandler extends Handler {
+
+    String PRIVATE_CLAIM_BYPASS_PERMISSION = "huskclaims.bypass.private";
+    String LEGACY_PRIVATE_CLAIM_BYPASS_PERMISSION = "huskclaimsfixes.bypass";
 
     @Override
     default boolean cancelOperation(@NotNull Operation operation) {
@@ -184,6 +187,11 @@ public interface ClaimHandler extends Handler {
     // Checks if a user has permission to bypass private claims when ignoring claims
     default boolean hasIgnoreClaimsPrivatePermission(@NotNull OnlineUser user) {
         return getPlugin().canUseCommand(IgnoreClaimsCommand.class, user, "private");
+    }
+
+    default boolean hasPrivateClaimBypassPermission(@NotNull OnlineUser user) {
+        return user.hasPermission(PRIVATE_CLAIM_BYPASS_PERMISSION)
+                || user.hasPermission(LEGACY_PRIVATE_CLAIM_BYPASS_PERMISSION);
     }
 
     // Checks if a user is ignoring claims, ensuring they also have permission to ignore claims

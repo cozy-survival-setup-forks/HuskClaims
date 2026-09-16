@@ -2,8 +2,16 @@ plugins {
     id 'maven-publish'
 }
 
+if (rootProject.hasProperty('externalJavac')) {
+    evaluationDependsOn(':common')
+}
+
 dependencies {
     implementation project(path: ':common')
+
+    if (rootProject.hasProperty('externalJavac')) {
+        compileOnly files(project(':common').tasks.named('compileClasspathJar'))
+    }
 
     implementation 'net.kyori:adventure-platform-bukkit:4.4.0'
     implementation 'io.papermc:paperlib:1.0.8'
@@ -26,6 +34,15 @@ dependencies {
     compileOnly 'com.sk89q.worldguard:worldguard-bukkit:7.0.9-SNAPSHOT'
 
     annotationProcessor 'org.projectlombok:lombok:1.18.38'
+}
+
+if (rootProject.hasProperty('externalJavac')) {
+    compileJava.dependsOn(':common:compileClasspathJar')
+    tasks.register('compileClasspathJar', Jar) {
+        archiveClassifier.set('compile-classpath')
+        destinationDirectory.set(layout.buildDirectory.dir('classpath'))
+        from sourceSets.main.output
+    }
 }
 
 shadowJar {

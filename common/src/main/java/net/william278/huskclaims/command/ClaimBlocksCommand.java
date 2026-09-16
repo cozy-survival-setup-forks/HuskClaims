@@ -40,7 +40,7 @@ public class ClaimBlocksCommand extends Command implements UserListTabCompletabl
 
     protected ClaimBlocksCommand(@NotNull HuskClaims plugin) {
         super(
-                List.of("claimblocks", "adjustclaimblocks"),
+                List.of("claimblocks", "adjustclaimblocks", "modifyclaimblocks"),
                 "[user] [<set|add|remove|gift> <amount>]",
                 plugin
         );
@@ -53,8 +53,16 @@ public class ClaimBlocksCommand extends Command implements UserListTabCompletabl
 
     @Override
     public void execute(@NotNull CommandUser executor, @NotNull String[] args) {
-        final Optional<User> optionalUser = resolveUser(executor, args);
-        final ClaimBlockOption option = parseClaimBlockOption(args).orElse(ClaimBlockOption.SHOW);
+        final Optional<ClaimBlockOption> firstArgOption = parseStringArg(args, 0)
+                .flatMap(ClaimBlockOption::matchClaimBlockOption)
+                .filter(option -> option == ClaimBlockOption.ADD || option == ClaimBlockOption.REMOVE);
+        final boolean legacyArgumentOrder = firstArgOption.isPresent() && args.length >= 3;
+        final Optional<User> optionalUser = legacyArgumentOrder
+                ? resolveUser(executor, new String[]{args[1]})
+                : resolveUser(executor, args);
+        final ClaimBlockOption option = legacyArgumentOrder
+                ? firstArgOption.get()
+                : parseClaimBlockOption(args).orElse(ClaimBlockOption.SHOW);
         final Optional<Long> amount = parseClaimBlocksArg(args, 2);
         if (optionalUser.isEmpty() || (amount.isEmpty() && option != ClaimBlockOption.SHOW)) {
             plugin.getLocales().getLocale("error_invalid_syntax", getUsage())

@@ -2,17 +2,31 @@ plugins {
     id 'xyz.jpenilla.run-paper' version '2.3.1'
 }
 
+if (rootProject.hasProperty('externalJavac')) {
+    evaluationDependsOn(':common')
+    evaluationDependsOn(':bukkit')
+}
+
 dependencies {
     implementation project(':bukkit')
     compileOnly project(':common')
 
-    compileOnly 'io.papermc.paper:paper-api:1.19.4-R0.1-SNAPSHOT'
+    if (rootProject.hasProperty('externalJavac')) {
+        compileOnly files(project(':common').tasks.named('compileClasspathJar'))
+        compileOnly files(project(':bukkit').tasks.named('compileClasspathJar'))
+    }
+
+    compileOnly 'io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT'
 
     compileOnly 'org.jetbrains:annotations:26.0.2'
     compileOnly 'org.projectlombok:lombok:1.18.38'
     compileOnly 'net.william278.cloplib:cloplib-bukkit:2.0.13'
 
     annotationProcessor 'org.projectlombok:lombok:1.18.38'
+}
+
+if (rootProject.hasProperty('externalJavac')) {
+    compileJava.dependsOn(':common:compileClasspathJar', ':bukkit:compileClasspathJar')
 }
 
 shadowJar {
@@ -48,7 +62,7 @@ shadowJar {
 
 tasks {
     runServer {
-        minecraftVersion('1.21.5')
+        minecraftVersion('1.21.11')
         downloadPlugins {
             url("https://download.luckperms.net/1569/bukkit/loader/LuckPerms-Bukkit-5.4.152.jar")
 

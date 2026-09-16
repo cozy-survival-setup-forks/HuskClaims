@@ -68,6 +68,10 @@ allprojects {
 
     compileJava.options.encoding = 'UTF-8'
     compileJava.options.release.set 21
+    if (rootProject.hasProperty('externalJavac')) {
+        compileJava.options.fork = true
+        compileJava.options.forkOptions.executable = "${System.getenv('JAVA_HOME')}/bin/javac.exe"
+    }
     javadoc.options.encoding = 'UTF-8'
     javadoc.options.addStringOption('Xdoclint:none', '-quiet')
 

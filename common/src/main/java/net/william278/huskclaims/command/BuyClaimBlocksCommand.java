@@ -32,14 +32,17 @@ public class BuyClaimBlocksCommand extends OnlineUserCommand {
 
     public BuyClaimBlocksCommand(@NotNull HuskClaims plugin) {
         super(
-                List.of("buyclaimblocks"),
-                "<amount>",
+                List.of("buyclaimblocks", "buyclaimblock", "claimshop", "claimblockshop"),
+                "[amount]",
                 plugin
         );
     }
 
     @Override
     public void execute(@NotNull OnlineUser executor, @NotNull String[] args) {
+        if (args.length == 0 && plugin.openClaimShop(executor)) {
+            return;
+        }
         final Optional<Long> amount = parseClaimBlocksArg(args, 0);
         if (amount.isEmpty()) {
             plugin.getLocales().getLocale("error_invalid_syntax", getUsage())
