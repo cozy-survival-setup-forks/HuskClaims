@@ -19,6 +19,7 @@
 
 package net.william278.huskclaims.listener;
 
+import net.william278.huskclaims.claim.ClaimOperationTypes;
 import org.jetbrains.annotations.NotNull;
 
 public interface ListenerProvider {
@@ -28,6 +29,7 @@ public interface ListenerProvider {
 
     default void loadListeners() {
         setOperationListener(createListener());
+        ClaimOperationTypes.register(getOperationListener());
         getOperationListener().register();
     }
 
