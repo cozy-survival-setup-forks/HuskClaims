@@ -230,11 +230,8 @@ public class BukkitListener extends BukkitOperationListener implements BukkitPet
             return;
         }
         final Position position = BukkitHuskClaims.Adapter.adapt(item.getLocation());
-        final boolean customDenied = plugin.cancelOperation(Operation.of(
-                plugin.getOnlineUser(player), ClaimOperationTypes.ITEM_PICKUP, position));
-        final boolean legacyDenied = plugin.cancelOperation(Operation.of(
-                plugin.getOnlineUser(player), OperationType.ENTITY_INTERACT, position));
-        if (customDenied && legacyDenied) {
+        if (cancelOperationWithFallback(
+                player, ClaimOperationTypes.ITEM_PICKUP, OperationType.ENTITY_INTERACT, position)) {
             e.setCancelled(true);
         }
     }
@@ -318,11 +315,15 @@ public class BukkitListener extends BukkitOperationListener implements BukkitPet
     private boolean cancelDisplayEdit(@NotNull Player player, @NotNull Entity entity,
                                       @NotNull OperationType fallback) {
         final Position position = BukkitHuskClaims.Adapter.adapt(entity.getLocation());
-        final boolean customDenied = plugin.cancelOperation(Operation.of(
-                plugin.getOnlineUser(player), ClaimOperationTypes.DISPLAY_ENTITY_EDIT, position));
-        final boolean fallbackDenied = plugin.cancelOperation(Operation.of(
-                plugin.getOnlineUser(player), fallback, position));
-        return customDenied && fallbackDenied;
+        return cancelOperationWithFallback(player, ClaimOperationTypes.DISPLAY_ENTITY_EDIT, fallback, position);
+    }
+
+    private boolean cancelOperationWithFallback(@NotNull Player player, @NotNull OperationType preferred,
+                                                @NotNull OperationType fallback, @NotNull Position position) {
+        if (!plugin.cancelOperation(Operation.of(plugin.getOnlineUser(player), preferred, position, true))) {
+            return false;
+        }
+        return plugin.cancelOperation(Operation.of(plugin.getOnlineUser(player), fallback, position));
     }
 
     private boolean isDisplayEntity(@NotNull Entity entity) {
