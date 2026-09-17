@@ -103,7 +103,7 @@ locales:
   no_child_deletion_permission: '[You do not have permission to delete this child claim.](#ff7e5e)'
   no_operation_permission: '[That land is protected by %1%''s claim.](#ff7e5e)'
   no_transfer_permission: '[You do not have permission to transfer this claim.](#ff7e5e)'
-  no_wilderness_permission: '[You are not allowed do that in the wilderness.](#ff7e5e)'
+  no_wilderness_permission: '[You cannot do that in the wilderness.](#FF6B7A)'
   enabled_operation_group: '[Successfully enabled %1% in this claim.](#00fb9a)'
   disabled_operation_group: '[Successfully disabled %1% in this claim.](#00fb9a)'
   trust_list_header: '[Trustees with access to](#00fb9a) %1%[:](#00fb9a)\n'
