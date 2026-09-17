@@ -39,6 +39,12 @@ import java.util.UUID;
 public class PaperHuskClaims extends BukkitHuskClaims {
 
     @Override
+    public void onEnable() {
+        super.onEnable();
+        TriumphGui.init(this);
+    }
+
+    @Override
     @SuppressWarnings("UnstableApiUsage")
     public void sendBlockUpdates(@NotNull OnlineUser user, @NotNull Map<Position, MaterialBlock> blocks) {
         ((BukkitUser) user).getBukkitPlayer().sendMultiBlockChange(Adapter.adapt(blocks));
@@ -71,8 +77,12 @@ public class PaperHuskClaims extends BukkitHuskClaims {
         if (!(user instanceof BukkitUser bukkitUser)) {
             return false;
         }
-        TriumphGui.init(this);
-        new ClaimShopMenu(this, bukkitUser.getBukkitPlayer()).open();
+        final Player player = bukkitUser.getBukkitPlayer();
+        runSync(player, () -> {
+            if (player.isOnline()) {
+                new ClaimShopMenu(this, player).open();
+            }
+        });
         return true;
     }
 
