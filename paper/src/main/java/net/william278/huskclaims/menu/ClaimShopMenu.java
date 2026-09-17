@@ -20,18 +20,17 @@
 package net.william278.huskclaims.menu;
 
 import de.themoep.minedown.adventure.MineDown;
+import dev.triumphteam.gui.guis.Gui;
+import dev.triumphteam.gui.guis.GuiItem;
 import net.kyori.adventure.text.Component;
 import net.william278.huskclaims.PaperHuskClaims;
 import net.william278.huskclaims.hook.EconomyHook;
 import net.william278.huskclaims.user.ClaimBlocksManager;
 import net.william278.huskclaims.user.OnlineUser;
 import net.william278.huskclaims.user.SavedUser;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -43,7 +42,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-public final class ClaimShopMenu implements InventoryHolder {
+public final class ClaimShopMenu {
 
     private static final int SIZE = 45;
     private static final int DEFAULT_AMOUNT = 100;
@@ -51,29 +50,26 @@ public final class ClaimShopMenu implements InventoryHolder {
 
     private final PaperHuskClaims plugin;
     private final Player player;
-    private final Inventory inventory;
+    private final Gui gui;
     private long selectedAmount;
 
     public ClaimShopMenu(@NotNull PaperHuskClaims plugin, @NotNull Player player) {
         this.plugin = plugin;
         this.player = player;
         this.selectedAmount = DEFAULT_AMOUNT;
-        this.inventory = Bukkit.createInventory(this, SIZE, text("&#C8A6FF&lClaim Block Exchange"));
+        this.gui = Gui.gui()
+                .title(text("&#C8A6FF&lClaim Block Exchange"))
+                .rows(SIZE / 9)
+                .disableAllInteractions()
+                .create();
         draw();
     }
 
     public void open() {
-        player.openInventory(inventory);
+        gui.open(player);
     }
 
-    @Override
-    @NotNull
-    public Inventory getInventory() {
-        return inventory;
-    }
-
-    public void handleClick(@NotNull InventoryClickEvent event) {
-        event.setCancelled(true);
+    private void handleClick(@NotNull InventoryClickEvent event) {
         if (event.getRawSlot() < 0 || event.getRawSlot() >= SIZE) {
             return;
         }
@@ -136,19 +132,19 @@ public final class ClaimShopMenu implements InventoryHolder {
     }
 
     private void draw() {
-        inventory.clear();
+        gui.clearItems();
         final ItemStack border = item(Material.GRAY_STAINED_GLASS_PANE, " ", List.of());
         for (int slot = 0; slot < SIZE; slot++) {
             if (slot < 9 || slot >= 36 || slot % 9 == 0 || slot % 9 == 8) {
-                inventory.setItem(slot, border);
+                gui.setItem(slot, new GuiItem(border));
             }
         }
 
-        inventory.setItem(11, bundle(Material.PRISMARINE_CRYSTALS, "&#66D9E8&lQUICK", 100));
-        inventory.setItem(13, bundle(Material.SUNFLOWER, "&#FFD166&lSTANDARD", 500));
-        inventory.setItem(15, bundle(Material.AMETHYST_SHARD, "&#C8A6FF&lEXPANDED", 1000));
-        inventory.setItem(22, infoItem());
-        inventory.setItem(29, item(
+        setActionItem(11, bundle(Material.PRISMARINE_CRYSTALS, "&#66D9E8&lQUICK", 100));
+        setActionItem(13, bundle(Material.SUNFLOWER, "&#FFD166&lSTANDARD", 500));
+        setActionItem(15, bundle(Material.AMETHYST_SHARD, "&#C8A6FF&lEXPANDED", 1000));
+        gui.setItem(22, new GuiItem(infoItem()));
+        setActionItem(29, item(
                 Material.REDSTONE,
                 "&#FF6B7A&lRESET",
                 List.of(
@@ -158,10 +154,10 @@ public final class ClaimShopMenu implements InventoryHolder {
                         "&fRestore the &#66D9E8selection &fto its",
                         "&#8BF0A6default &famount.",
                         "",
-                        "&#FF6B7A&lLEFT CLICK &#A7B6C4• &fReset selection"
+                        "&#FFB86B⏵ &#FFB86B&lLEFT CLICK&r &#A7B6C4• &fReset selection"
                 )
         ));
-        inventory.setItem(31, item(
+        setActionItem(31, item(
                 Material.NAME_TAG,
                 "&#FFD166&lCUSTOM AMOUNT",
                 List.of(
@@ -171,10 +167,10 @@ public final class ClaimShopMenu implements InventoryHolder {
                         "&fEnter a &#66D9E8custom &fnumber of",
                         "&#8BF0A6claim &fblocks through chat.",
                         "",
-                        "&#FFD166&lLEFT CLICK &#A7B6C4• &fEnter amount"
+                        "&#FFB86B⏵ &#FFB86B&lLEFT CLICK&r &#A7B6C4• &fEnter amount"
                 )
         ));
-        inventory.setItem(33, item(
+        setActionItem(33, item(
                 Material.EMERALD,
                 "&#8BF0A6&lCONFIRM PURCHASE",
                 List.of(
@@ -184,18 +180,23 @@ public final class ClaimShopMenu implements InventoryHolder {
                         "&fPurchase the &#66D9E8selected &fclaim",
                         "&#8BF0A6blocks &ffor the shown &#FF6B7Atotal&f.",
                         "",
-                        "&#8BF0A6&lLEFT CLICK &#A7B6C4• &fConfirm purchase"
+                        "&#FFB86B⏵ &#FFB86B&lLEFT CLICK&r &#A7B6C4• &fConfirm purchase"
                 )
         ));
-        inventory.setItem(40, item(
+        setActionItem(40, item(
                 Material.BARRIER,
                 "&#FF6B7A&lCLOSE",
                 List.of(
                         "&#A7B6C4Claim Block Exchange",
                         "",
-                        "&#FF6B7A&lLEFT CLICK &#A7B6C4• &fClose menu"
+                        "&#FFB86B⏵ &#FFB86B&lLEFT CLICK&r &#A7B6C4• &fClose menu"
                 )
         ));
+        gui.update();
+    }
+
+    private void setActionItem(int slot, @NotNull ItemStack item) {
+        gui.setItem(slot, new GuiItem(item, this::handleClick));
     }
 
     private ItemStack bundle(@NotNull Material material, @NotNull String name, long amount) {
@@ -206,9 +207,9 @@ public final class ClaimShopMenu implements InventoryHolder {
                 "&fChoose a &#66D9E8bundle &fto &#FFD166adjust",
                 "&fyour &#FF6B7Aselection &finstantly.",
                 "",
-                "&#66D9E8&lLEFT CLICK &#A7B6C4• &fAdd &#66D9E8" + amount,
-                "&#FFD166&lRIGHT CLICK &#A7B6C4• &fRemove &#FFD166" + amount,
-                "&#C8A6FF&lSHIFT CLICK &#A7B6C4• &fApply &#C8A6FF" + (amount * 10)
+                "&#FFB86B⏵ &#FFB86B&lLEFT CLICK&r &#A7B6C4• &fAdd &#FFB86B" + amount,
+                "&#FFB86B⏵ &#FFB86B&lRIGHT CLICK&r &#A7B6C4• &fRemove &#FFB86B" + amount,
+                "&#FFB86B⏵ &#FFB86B&lSHIFT CLICK&r &#A7B6C4• &fApply &#FFB86B" + (amount * 10)
         ));
     }
 

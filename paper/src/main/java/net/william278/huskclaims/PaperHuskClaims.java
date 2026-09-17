@@ -19,6 +19,7 @@
 
 package net.william278.huskclaims;
 
+import dev.triumphteam.gui.TriumphGui;
 import lombok.NoArgsConstructor;
 import net.kyori.adventure.audience.Audience;
 import net.william278.huskclaims.highlighter.PaperBlockDisplayHighlighter;
@@ -70,6 +71,7 @@ public class PaperHuskClaims extends BukkitHuskClaims {
         if (!(user instanceof BukkitUser bukkitUser)) {
             return false;
         }
+        TriumphGui.init(this);
         new ClaimShopMenu(this, bukkitUser.getBukkitPlayer()).open();
         return true;
     }

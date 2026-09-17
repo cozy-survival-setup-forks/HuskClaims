@@ -36,7 +36,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.jetbrains.annotations.NotNull;
 
@@ -65,13 +64,6 @@ public class PaperListener extends BukkitListener {
                         plugin.getServerName()
                 )), e
         );
-    }
-
-    @EventHandler
-    public void onClaimShopClick(@NotNull InventoryClickEvent e) {
-        if (e.getView().getTopInventory().getHolder() instanceof ClaimShopMenu menu) {
-            menu.handleClick(e);
-        }
     }
 
     @EventHandler(ignoreCancelled = true)

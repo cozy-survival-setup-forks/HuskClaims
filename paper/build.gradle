@@ -9,6 +9,7 @@ if (rootProject.hasProperty('externalJavac')) {
 
 dependencies {
     implementation project(':bukkit')
+    implementation 'dev.triumphteam:triumph-gui-paper:3.1.13'
     compileOnly project(':common')
 
     if (rootProject.hasProperty('externalJavac')) {
@@ -56,6 +57,7 @@ shadowJar {
     relocate 'space.arim', 'net.william278.huskclaims.libraries.paperlib'
     relocate 'me.lucko', 'net.william278.huskclaims.libraries'
     relocate 'net.roxeez', 'net.william278.huskclaims.libraries'
+    relocate 'dev.triumphteam.gui', 'net.william278.huskclaims.libraries.triumph.gui'
 
     minimize()
 }
