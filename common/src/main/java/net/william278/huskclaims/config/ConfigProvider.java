@@ -122,6 +122,36 @@ public interface ConfigProvider {
         }
     }
 
+    /**
+     * Get the claim shop menu config
+     *
+     * @return the claim shop menu config
+     * @since 1.5.11
+     */
+    @NotNull
+    ClaimShopMenuConfig getClaimShopMenuConfig();
+
+    /**
+     * Set the claim shop menu config
+     *
+     * @param config The config to set
+     * @since 1.5.11
+     */
+    void setClaimShopMenuConfig(@NotNull ClaimShopMenuConfig config);
+
+    /**
+     * Load the claim shop menu config from file
+     *
+     * @since 1.5.11
+     */
+    default void loadClaimShopMenuConfig() {
+        setClaimShopMenuConfig(YamlConfigurations.update(
+                getConfigDirectory().resolve("claim_shop_menu.yml"),
+                ClaimShopMenuConfig.class,
+                YAML_CONFIGURATION_PROPERTIES.header(ClaimShopMenuConfig.CONFIG_HEADER).build()
+        ));
+    }
+
     @NotNull
     String getServerName();
 

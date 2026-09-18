@@ -35,6 +35,7 @@ import net.william278.huskclaims.api.BukkitHuskClaimsAPI;
 import net.william278.huskclaims.claim.ClaimWorld;
 import net.william278.huskclaims.command.BukkitCommand;
 import net.william278.huskclaims.command.Command;
+import net.william278.huskclaims.config.ClaimShopMenuConfig;
 import net.william278.huskclaims.config.Locales;
 import net.william278.huskclaims.config.Server;
 import net.william278.huskclaims.config.Settings;
@@ -114,6 +115,8 @@ public class BukkitHuskClaims extends JavaPlugin implements HuskClaims, BukkitTa
     private TrustLevels trustLevels;
     @Setter
     private Locales locales;
+    @Setter
+    private ClaimShopMenuConfig claimShopMenuConfig;
     @Setter
     @Nullable
     private Broker broker;
