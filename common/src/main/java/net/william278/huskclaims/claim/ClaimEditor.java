@@ -518,6 +518,12 @@ public interface ClaimEditor {
         }
 
         final Claim parent = optionalParent.get();
+        if (!parent.isPrivilegeAllowed(TrustLevel.Privilege.MANAGE_CHILD_CLAIMS, user, getPlugin())) {
+            getPlugin().getLocales().getLocale("no_claiming_child_permission")
+                    .ifPresent(user::sendMessage);
+            return;
+        }
+
         if (!parent.getRegion().fullyEncloses(region) || parent.getRegion().equals(region)) {
             getPlugin().getHighlighter(user).startHighlighting(user, user.getWorld(), parent, true);
             getPlugin().getLocales().getLocale("selection_child_not_enclosing_parent")
