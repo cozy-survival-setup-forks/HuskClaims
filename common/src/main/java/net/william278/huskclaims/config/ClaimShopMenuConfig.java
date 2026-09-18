@@ -46,7 +46,8 @@ public class ClaimShopMenuConfig {
             ┃    Developed by William278   ┃
             ┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
             ┣╸ Customise the appearance of the /claimblocks shop
-            ┣╸ Formatted in MiniMessage: https://docs.advntr.dev/minimessage/format.html
+            ┣╸ Supports MiniMessage (https://docs.advntr.dev/minimessage/format.html)
+            ┣╸ and legacy codes, including &#RRGGBB hex codes and &a / &l style codes
             ┣╸ Bundle placeholders: %amount%, %amount_x10%
             ┗╸ Info item placeholders: %quantity%, %unit_price%, %total_cost%
             """;
