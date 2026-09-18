@@ -24,6 +24,7 @@ import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import net.kyori.adventure.text.Component;
 import net.william278.huskclaims.PaperHuskClaims;
+import net.william278.huskclaims.config.ClaimShopMenuConfig;
 import net.william278.huskclaims.hook.EconomyHook;
 import net.william278.huskclaims.user.ClaimBlocksManager;
 import net.william278.huskclaims.user.OnlineUser;
@@ -44,21 +45,29 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class ClaimShopMenu {
 
-    private static final int SIZE = 45;
+    private static final int SIZE = 54;
     private static final int DEFAULT_AMOUNT = 100;
+    private static final int[] BUNDLE_SLOTS = {11, 13, 15};
+    private static final int RESET_SLOT = 29;
+    private static final int CUSTOM_AMOUNT_SLOT = 31;
+    private static final int CONFIRM_SLOT = 33;
+    private static final int INFO_SLOT = 22;
+    private static final int CLOSE_SLOT = 49;
     private static final Map<UUID, ClaimShopMenu> ACTIVE_INPUTS = new ConcurrentHashMap<>();
 
     private final PaperHuskClaims plugin;
+    private final ClaimShopMenuConfig config;
     private final Player player;
     private final Gui gui;
     private long selectedAmount;
 
     public ClaimShopMenu(@NotNull PaperHuskClaims plugin, @NotNull Player player) {
         this.plugin = plugin;
+        this.config = plugin.getClaimShopMenuConfig();
         this.player = player;
         this.selectedAmount = DEFAULT_AMOUNT;
         this.gui = Gui.gui()
-                .title(text("&#C8A6FF&lClaim Block Exchange"))
+                .title(text(config.getTitle()))
                 .rows(SIZE / 9)
                 .disableAllInteractions()
                 .create();
@@ -75,12 +84,7 @@ public final class ClaimShopMenu {
         }
 
         final long multiplier = event.isShiftClick() ? 10L : 1L;
-        final long bundle = switch (event.getRawSlot()) {
-            case 11 -> 100L;
-            case 13 -> 500L;
-            case 15 -> 1000L;
-            default -> 0L;
-        };
+        final long bundle = bundleAmountAt(event.getRawSlot());
         if (bundle > 0) {
             final long change = Math.multiplyExact(bundle, multiplier);
             selectedAmount = event.isRightClick()
@@ -90,17 +94,26 @@ public final class ClaimShopMenu {
             return;
         }
 
-        switch (event.getRawSlot()) {
-            case 29 -> {
-                selectedAmount = DEFAULT_AMOUNT;
-                draw();
-            }
-            case 31 -> beginCustomInput();
-            case 33 -> confirmPurchase();
-            case 40 -> player.closeInventory();
-            default -> {
+        if (event.getRawSlot() == RESET_SLOT) {
+            selectedAmount = DEFAULT_AMOUNT;
+            draw();
+        } else if (event.getRawSlot() == CUSTOM_AMOUNT_SLOT) {
+            beginCustomInput();
+        } else if (event.getRawSlot() == CONFIRM_SLOT) {
+            confirmPurchase();
+        } else if (event.getRawSlot() == CLOSE_SLOT) {
+            player.closeInventory();
+        }
+    }
+
+    private long bundleAmountAt(int slot) {
+        final List<ClaimShopMenuConfig.BundleItem> bundles = config.getBundles();
+        for (int i = 0; i < BUNDLE_SLOTS.length && i < bundles.size(); i++) {
+            if (BUNDLE_SLOTS[i] == slot) {
+                return bundles.get(i).getAmount();
             }
         }
+        return 0L;
     }
 
     public void acceptInput(@NotNull String input) {
@@ -133,65 +146,28 @@ public final class ClaimShopMenu {
 
     private void draw() {
         gui.clearItems();
-        final ItemStack border = item(Material.GRAY_STAINED_GLASS_PANE, " ", List.of());
+        final ItemStack border = item(resolveMaterial(config.getBorderMaterial(), Material.BLACK_STAINED_GLASS_PANE), " ", List.of());
+        final ItemStack accentBorder = item(resolveMaterial(config.getAccentBorderMaterial(), Material.PURPLE_STAINED_GLASS_PANE), " ", List.of());
         for (int slot = 0; slot < SIZE; slot++) {
-            if (slot < 9 || slot >= 36 || slot % 9 == 0 || slot % 9 == 8) {
+            final boolean topOrBottomRow = slot < 9 || slot >= 45;
+            final boolean sideColumn = slot % 9 == 0 || slot % 9 == 8;
+            if (topOrBottomRow) {
+                gui.setItem(slot, new GuiItem(accentBorder));
+            } else if (sideColumn) {
                 gui.setItem(slot, new GuiItem(border));
             }
         }
 
-        setActionItem(11, bundle(Material.PRISMARINE_CRYSTALS, "&#66D9E8&lQUICK", 100));
-        setActionItem(13, bundle(Material.SUNFLOWER, "&#FFD166&lSTANDARD", 500));
-        setActionItem(15, bundle(Material.AMETHYST_SHARD, "&#C8A6FF&lEXPANDED", 1000));
-        gui.setItem(22, new GuiItem(infoItem()));
-        setActionItem(29, item(
-                Material.REDSTONE,
-                "&#FF6B7A&lRESET",
-                List.of(
-                        "&#A7B6C4Claim Block Exchange",
-                        "",
-                        "&#FF9F7ADescription:",
-                        "&fRestore the &#66D9E8selection &fto its",
-                        "&#8BF0A6default &famount.",
-                        "",
-                        "&#FFB86B⏵ &#FFB86B&lLEFT CLICK&r &#A7B6C4• &fReset selection"
-                )
-        ));
-        setActionItem(31, item(
-                Material.NAME_TAG,
-                "&#FFD166&lCUSTOM AMOUNT",
-                List.of(
-                        "&#A7B6C4Claim Block Exchange",
-                        "",
-                        "&#FF9F7ADescription:",
-                        "&fEnter a &#66D9E8custom &fnumber of",
-                        "&#8BF0A6claim &fblocks through chat.",
-                        "",
-                        "&#FFB86B⏵ &#FFB86B&lLEFT CLICK&r &#A7B6C4• &fEnter amount"
-                )
-        ));
-        setActionItem(33, item(
-                Material.EMERALD,
-                "&#8BF0A6&lCONFIRM PURCHASE",
-                List.of(
-                        "&#A7B6C4Claim Block Exchange",
-                        "",
-                        "&#FF9F7ADescription:",
-                        "&fPurchase the &#66D9E8selected &fclaim",
-                        "&#8BF0A6blocks &ffor the shown &#FF6B7Atotal&f.",
-                        "",
-                        "&#FFB86B⏵ &#FFB86B&lLEFT CLICK&r &#A7B6C4• &fConfirm purchase"
-                )
-        ));
-        setActionItem(40, item(
-                Material.BARRIER,
-                "&#FF6B7A&lCLOSE",
-                List.of(
-                        "&#A7B6C4Claim Block Exchange",
-                        "",
-                        "&#FFB86B⏵ &#FFB86B&lLEFT CLICK&r &#A7B6C4• &fClose menu"
-                )
-        ));
+        final List<ClaimShopMenuConfig.BundleItem> bundles = config.getBundles();
+        for (int i = 0; i < BUNDLE_SLOTS.length && i < bundles.size(); i++) {
+            setActionItem(BUNDLE_SLOTS[i], bundleItemStack(bundles.get(i)));
+        }
+
+        gui.setItem(INFO_SLOT, new GuiItem(infoItemStack()));
+        setActionItem(RESET_SLOT, defItemStack(config.getResetItem()));
+        setActionItem(CUSTOM_AMOUNT_SLOT, defItemStack(config.getCustomAmountItem()));
+        setActionItem(CONFIRM_SLOT, defItemStack(config.getConfirmItem()));
+        setActionItem(CLOSE_SLOT, defItemStack(config.getCloseItem()));
         gui.update();
     }
 
@@ -199,37 +175,40 @@ public final class ClaimShopMenu {
         gui.setItem(slot, new GuiItem(item, this::handleClick));
     }
 
-    private ItemStack bundle(@NotNull Material material, @NotNull String name, long amount) {
-        return item(material, name, List.of(
-                "&#A7B6C4Claim Block Exchange",
-                "",
-                "&#FF9F7ADescription:",
-                "&fChoose a &#66D9E8bundle &fto &#FFD166adjust",
-                "&fyour &#FF6B7Aselection &finstantly.",
-                "",
-                "&#FFB86B⏵ &#FFB86B&lLEFT CLICK&r &#A7B6C4• &fAdd &#FFB86B" + amount,
-                "&#FFB86B⏵ &#FFB86B&lRIGHT CLICK&r &#A7B6C4• &fRemove &#FFB86B" + amount,
-                "&#FFB86B⏵ &#FFB86B&lSHIFT CLICK&r &#A7B6C4• &fApply &#FFB86B" + (amount * 10)
-        ));
+    private ItemStack bundleItemStack(@NotNull ClaimShopMenuConfig.BundleItem bundle) {
+        final List<String> lore = bundle.getLore().stream()
+                .map(line -> line
+                        .replace("%amount%", Long.toString(bundle.getAmount()))
+                        .replace("%amount_x10%", Long.toString(bundle.getAmount() * 10)))
+                .toList();
+        return item(resolveMaterial(bundle.getMaterial(), Material.PAPER), bundle.getName(), lore);
     }
 
-    private ItemStack infoItem() {
+    private ItemStack infoItemStack() {
         final double unitPrice = Math.max(0, plugin.getSettings().getHooks().getEconomy().getCostPerBlock());
         final double total = selectedAmount * unitPrice;
         final Optional<EconomyHook> economy = plugin.getHook(EconomyHook.class);
         final String formattedUnit = economy.map(hook -> hook.format(unitPrice)).orElse(Double.toString(unitPrice));
         final String formattedTotal = economy.map(hook -> hook.format(total)).orElse(Double.toString(total));
-        return item(Material.GOLDEN_SHOVEL, "&#C8A6FF&lCLAIM BLOCKS", List.of(
-                "&#A7B6C4Claim Block Exchange",
-                "",
-                "&#FF9F7ADescription:",
-                "&fReview the &#FFD166quantity&f, &#66D9E8price&f,",
-                "&fand final &#8BF0A6cost &fbefore &#FF6B7Apurchase&f.",
-                "",
-                "&#66D9E8Quantity: &f" + selectedAmount,
-                "&#FFD166Unit Price: &f" + formattedUnit,
-                "&#8BF0A6Total Cost: &f" + formattedTotal
-        ));
+
+        final ClaimShopMenuConfig.ItemDef def = config.getInfoItem();
+        final List<String> lore = def.getLore().stream()
+                .map(line -> line
+                        .replace("%quantity%", Long.toString(selectedAmount))
+                        .replace("%unit_price%", formattedUnit)
+                        .replace("%total_cost%", formattedTotal))
+                .toList();
+        return item(resolveMaterial(def.getMaterial(), Material.NETHER_STAR), def.getName(), lore);
+    }
+
+    private ItemStack defItemStack(@NotNull ClaimShopMenuConfig.ItemDef def) {
+        return item(resolveMaterial(def.getMaterial(), Material.BARRIER), def.getName(), def.getLore());
+    }
+
+    @NotNull
+    private Material resolveMaterial(@NotNull String name, @NotNull Material fallback) {
+        final Material material = Material.matchMaterial(name);
+        return material != null ? material : fallback;
     }
 
     private void beginCustomInput() {
