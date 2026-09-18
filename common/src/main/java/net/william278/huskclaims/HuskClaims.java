@@ -66,6 +66,7 @@ public interface HuskClaims extends Task.Supplier, ConfigProvider, UserProvider,
             loadServer();
             loadTrustLevels();
             loadLocales();
+            loadClaimShopMenuConfig();
             loadHooks(PluginHook.Register.values());
             registerHooks(PluginHook.Register.ON_LOAD);
         } catch (Throwable e) {
