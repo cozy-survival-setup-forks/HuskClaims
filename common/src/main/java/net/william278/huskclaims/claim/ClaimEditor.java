@@ -347,7 +347,7 @@ public interface ClaimEditor {
             // Send the correct deletion message
             if (claim.getOwner().isPresent()) {
                 getPlugin().getLocales().getLocale("claim_deleted",
-                                Integer.toString(claim.getRegion().getSurfaceArea()))
+                                Long.toString(claim.getRegion().getSurfaceArea()))
                         .ifPresent(executor::sendMessage);
                 return;
             }
