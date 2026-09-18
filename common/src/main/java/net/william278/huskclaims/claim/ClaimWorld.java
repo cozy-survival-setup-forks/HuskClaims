@@ -234,7 +234,7 @@ public class ClaimWorld {
      * @since 1.0
      */
     public long getSurfaceClaimedBy(@NotNull User owner) {
-        return getClaimsByUser(owner.getUuid()).stream().mapToInt(c -> c.getRegion().getSurfaceArea()).sum();
+        return getClaimsByUser(owner.getUuid()).stream().mapToLong(c -> c.getRegion().getSurfaceArea()).sum();
     }
 
     /**

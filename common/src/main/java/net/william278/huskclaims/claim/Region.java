@@ -141,7 +141,7 @@ public class Region {
      * @return The surface area of this region
      * @since 1.0
      */
-    public int getSurfaceArea() {
+    public long getSurfaceArea() {
         return nearCorner.getSurfaceArea(farCorner);
     }
 
