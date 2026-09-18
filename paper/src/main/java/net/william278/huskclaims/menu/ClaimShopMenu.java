@@ -19,10 +19,11 @@
 
 package net.william278.huskclaims.menu;
 
-import de.themoep.minedown.adventure.MineDown;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.william278.huskclaims.PaperHuskClaims;
 import net.william278.huskclaims.config.ClaimShopMenuConfig;
 import net.william278.huskclaims.hook.EconomyHook;
@@ -265,6 +266,7 @@ public final class ClaimShopMenu {
     }
 
     private static Component text(@NotNull String input) {
-        return new MineDown(input).toComponent();
+        return MiniMessage.miniMessage().deserialize(input)
+                .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE);
     }
 }
