@@ -69,7 +69,7 @@ public class ClaimShopMenuConfig {
                     .lore(List.of(
                             "<gray>Claim Block Shop",
                             "",
-                            "<white>A quick top-up of <b><#66D9E8>claim blocks</b><white>.",
+                            "<white>A quick top-up of <#66D9E8>claim blocks<white>.",
                             "",
                             "<#EBCB8B>▶ <b><u>LEFT CLICK</u></b> to add %amount%",
                             "<#EBCB8B>▶ <b><u>RIGHT CLICK</u></b> to remove %amount%",
@@ -84,7 +84,7 @@ public class ClaimShopMenuConfig {
                     .lore(List.of(
                             "<gray>Claim Block Shop",
                             "",
-                            "<white>A solid stack of <b><#FFD166>claim blocks</b><white>.",
+                            "<white>A solid stack of <#FFD166>claim blocks<white>.",
                             "",
                             "<#EBCB8B>▶ <b><u>LEFT CLICK</u></b> to add %amount%",
                             "<#EBCB8B>▶ <b><u>RIGHT CLICK</u></b> to remove %amount%",
@@ -99,7 +99,7 @@ public class ClaimShopMenuConfig {
                     .lore(List.of(
                             "<gray>Claim Block Shop",
                             "",
-                            "<white>Go big with <b><#C8A6FF>a thousand</b><white> blocks.",
+                            "<white>Go big with <#C8A6FF>a thousand<white> blocks.",
                             "",
                             "<#EBCB8B>▶ <b><u>LEFT CLICK</u></b> to add %amount%",
                             "<#EBCB8B>▶ <b><u>RIGHT CLICK</u></b> to remove %amount%",
