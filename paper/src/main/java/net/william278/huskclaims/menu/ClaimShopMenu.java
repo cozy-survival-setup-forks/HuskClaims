@@ -57,6 +57,7 @@ public final class ClaimShopMenu {
     private static final int CLOSE_SLOT = 49;
     private static final Map<UUID, ClaimShopMenu> ACTIVE_INPUTS = new ConcurrentHashMap<>();
     private static final Pattern LEGACY_CODE = Pattern.compile("[&§]x((?:[&§][0-9a-fA-F]){6})|[&§]#([0-9a-fA-F]{6})|[&§]([0-9a-fA-Fk-orK-OR])");
+    private static final Pattern SECTION_CODES = Pattern.compile("\u00a7x(?:\u00a7[0-9a-fA-F]){6}|\u00a7[0-9a-fA-Fk-orK-OR]");
     private static final Map<Character, String> LEGACY_TAGS = Map.ofEntries(
             Map.entry('0', "<black>"), Map.entry('1', "<dark_blue>"), Map.entry('2', "<dark_green>"),
             Map.entry('3', "<dark_aqua>"), Map.entry('4', "<dark_red>"), Map.entry('5', "<dark_purple>"),
@@ -217,8 +218,8 @@ public final class ClaimShopMenu {
         final double unitPrice = Math.max(0, plugin.getSettings().getHooks().getEconomy().getCostPerBlock());
         final double total = selectedAmount * unitPrice;
         final Optional<EconomyHook> economy = plugin.getHook(EconomyHook.class);
-        final String formattedUnit = economy.map(hook -> hook.format(unitPrice)).orElse(Double.toString(unitPrice));
-        final String formattedTotal = economy.map(hook -> hook.format(total)).orElse(Double.toString(total));
+        final String formattedUnit = plainText(economy.map(hook -> hook.format(unitPrice)).orElse(Double.toString(unitPrice)));
+        final String formattedTotal = plainText(economy.map(hook -> hook.format(total)).orElse(Double.toString(total)));
 
         final ClaimShopMenuConfig.ItemDef def = config.getInfoItem();
         final List<String> lore = def.getLore().stream()
@@ -296,6 +297,11 @@ public final class ClaimShopMenu {
     private static Component text(@NotNull String input) {
         return MiniMessage.miniMessage().deserialize(legacyToMiniMessage(input))
                 .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE);
+    }
+
+    // economy plugins colour and embolden their own prices; the menu line decides how the value looks
+    private static String plainText(@NotNull String formatted) {
+        return SECTION_CODES.matcher(formatted).replaceAll("");
     }
 
     private static String legacyToMiniMessage(@NotNull String input) {
