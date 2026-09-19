@@ -57,7 +57,7 @@ public final class ClaimShopMenu {
     private static final int INFO_SLOT = 22;
     private static final int CLOSE_SLOT = 49;
     private static final Map<UUID, ClaimShopMenu> ACTIVE_INPUTS = new ConcurrentHashMap<>();
-    private static final Pattern LEGACY_CODE = Pattern.compile("&#([0-9a-fA-F]{6})|&([0-9a-fA-Fk-orK-OR])");
+    private static final Pattern LEGACY_CODE = Pattern.compile("[&§]x((?:[&§][0-9a-fA-F]){6})|[&§]#([0-9a-fA-F]{6})|[&§]([0-9a-fA-Fk-orK-OR])");
     private static final Map<Character, String> LEGACY_TAGS = Map.ofEntries(
             Map.entry('0', "<black>"), Map.entry('1', "<dark_blue>"), Map.entry('2', "<dark_green>"),
             Map.entry('3', "<dark_aqua>"), Map.entry('4', "<dark_red>"), Map.entry('5', "<dark_purple>"),
@@ -287,10 +287,12 @@ public final class ClaimShopMenu {
         final Matcher matcher = LEGACY_CODE.matcher(input);
         final StringBuilder out = new StringBuilder();
         while (matcher.find()) {
-            final String hex = matcher.group(1);
+            // placeholders such as the unit price arrive with section-sign codes already applied
+            final String spread = matcher.group(1);
+            final String hex = spread != null ? spread.replaceAll("[&§]", "") : matcher.group(2);
             final String tag = hex != null
                     ? "<#" + hex + ">"
-                    : LEGACY_TAGS.getOrDefault(Character.toLowerCase(matcher.group(2).charAt(0)), matcher.group());
+                    : LEGACY_TAGS.getOrDefault(Character.toLowerCase(matcher.group(3).charAt(0)), matcher.group());
             matcher.appendReplacement(out, Matcher.quoteReplacement(tag));
         }
         matcher.appendTail(out);
