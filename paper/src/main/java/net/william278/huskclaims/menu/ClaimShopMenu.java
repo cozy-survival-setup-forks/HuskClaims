@@ -48,7 +48,6 @@ import java.util.regex.Pattern;
 
 public final class ClaimShopMenu {
 
-    private static final int SIZE = 54;
     private static final int DEFAULT_AMOUNT = 100;
     private static final int[] BUNDLE_SLOTS = {11, 13, 15};
     private static final int RESET_SLOT = 29;
@@ -73,6 +72,7 @@ public final class ClaimShopMenu {
     private final ClaimShopMenuConfig config;
     private final Player player;
     private final Gui gui;
+    private final int size;
     private long selectedAmount;
 
     public ClaimShopMenu(@NotNull PaperHuskClaims plugin, @NotNull Player player) {
@@ -80,9 +80,10 @@ public final class ClaimShopMenu {
         this.config = plugin.getClaimShopMenuConfig();
         this.player = player;
         this.selectedAmount = DEFAULT_AMOUNT;
+        this.size = Math.max(1, Math.min(6, config.getRows())) * 9;
         this.gui = Gui.gui()
                 .title(text(config.getTitle()))
-                .rows(SIZE / 9)
+                .rows(size / 9)
                 .disableAllInteractions()
                 .create();
         draw();
@@ -93,7 +94,7 @@ public final class ClaimShopMenu {
     }
 
     private void handleClick(@NotNull InventoryClickEvent event) {
-        if (event.getRawSlot() < 0 || event.getRawSlot() >= SIZE) {
+        if (event.getRawSlot() < 0 || event.getRawSlot() >= size) {
             return;
         }
 
@@ -108,26 +109,38 @@ public final class ClaimShopMenu {
             return;
         }
 
-        if (event.getRawSlot() == RESET_SLOT) {
+        final int slot = event.getRawSlot();
+        if (slot == slotOf(config.getResetItem(), RESET_SLOT)) {
             selectedAmount = DEFAULT_AMOUNT;
             draw();
-        } else if (event.getRawSlot() == CUSTOM_AMOUNT_SLOT) {
+        } else if (slot == slotOf(config.getCustomAmountItem(), CUSTOM_AMOUNT_SLOT)) {
             beginCustomInput();
-        } else if (event.getRawSlot() == CONFIRM_SLOT) {
+        } else if (slot == slotOf(config.getConfirmItem(), CONFIRM_SLOT)) {
             confirmPurchase();
-        } else if (event.getRawSlot() == CLOSE_SLOT) {
+        } else if (slot == slotOf(config.getCloseItem(), CLOSE_SLOT)) {
             player.closeInventory();
         }
     }
 
     private long bundleAmountAt(int slot) {
         final List<ClaimShopMenuConfig.BundleItem> bundles = config.getBundles();
-        for (int i = 0; i < BUNDLE_SLOTS.length && i < bundles.size(); i++) {
-            if (BUNDLE_SLOTS[i] == slot) {
+        for (int i = 0; i < bundles.size(); i++) {
+            if (bundleSlot(bundles.get(i), i) == slot) {
                 return bundles.get(i).getAmount();
             }
         }
         return 0L;
+    }
+
+    private static int bundleSlot(@NotNull ClaimShopMenuConfig.BundleItem bundle, int index) {
+        if (bundle.getSlot() >= 0) {
+            return bundle.getSlot();
+        }
+        return index < BUNDLE_SLOTS.length ? BUNDLE_SLOTS[index] : -1;
+    }
+
+    private static int slotOf(@NotNull ClaimShopMenuConfig.ItemDef def, int fallback) {
+        return def.getSlot() >= 0 ? def.getSlot() : fallback;
     }
 
     public void acceptInput(@NotNull String input) {
@@ -160,33 +173,35 @@ public final class ClaimShopMenu {
 
     private void draw() {
         gui.clearItems();
-        final ItemStack border = item(resolveMaterial(config.getBorderMaterial(), Material.BLACK_STAINED_GLASS_PANE), " ", List.of());
-        final ItemStack accentBorder = item(resolveMaterial(config.getAccentBorderMaterial(), Material.PURPLE_STAINED_GLASS_PANE), " ", List.of());
-        for (int slot = 0; slot < SIZE; slot++) {
-            final boolean topOrBottomRow = slot < 9 || slot >= 45;
-            final boolean sideColumn = slot % 9 == 0 || slot % 9 == 8;
-            if (topOrBottomRow) {
-                gui.setItem(slot, new GuiItem(accentBorder));
-            } else if (sideColumn) {
-                gui.setItem(slot, new GuiItem(border));
+        final Material fillerMaterial = resolveMaterial(config.getFillerMaterial(), Material.BLACK_STAINED_GLASS_PANE);
+        if (!fillerMaterial.isAir()) {
+            final ItemStack filler = item(fillerMaterial, " ", List.of());
+            for (int slot = 0; slot < size; slot++) {
+                gui.setItem(slot, new GuiItem(filler));
             }
         }
 
         final List<ClaimShopMenuConfig.BundleItem> bundles = config.getBundles();
-        for (int i = 0; i < BUNDLE_SLOTS.length && i < bundles.size(); i++) {
-            setActionItem(BUNDLE_SLOTS[i], bundleItemStack(bundles.get(i)));
+        for (int i = 0; i < bundles.size(); i++) {
+            setActionItem(bundleSlot(bundles.get(i), i), bundleItemStack(bundles.get(i)));
         }
 
-        gui.setItem(INFO_SLOT, new GuiItem(infoItemStack()));
-        setActionItem(RESET_SLOT, defItemStack(config.getResetItem()));
-        setActionItem(CUSTOM_AMOUNT_SLOT, defItemStack(config.getCustomAmountItem()));
-        setActionItem(CONFIRM_SLOT, defItemStack(config.getConfirmItem()));
-        setActionItem(CLOSE_SLOT, defItemStack(config.getCloseItem()));
+        setItemAt(slotOf(config.getInfoItem(), INFO_SLOT), new GuiItem(infoItemStack()));
+        setActionItem(slotOf(config.getResetItem(), RESET_SLOT), defItemStack(config.getResetItem()));
+        setActionItem(slotOf(config.getCustomAmountItem(), CUSTOM_AMOUNT_SLOT), defItemStack(config.getCustomAmountItem()));
+        setActionItem(slotOf(config.getConfirmItem(), CONFIRM_SLOT), defItemStack(config.getConfirmItem()));
+        setActionItem(slotOf(config.getCloseItem(), CLOSE_SLOT), defItemStack(config.getCloseItem()));
         gui.update();
     }
 
+    private void setItemAt(int slot, @NotNull GuiItem item) {
+        if (slot >= 0 && slot < size) {
+            gui.setItem(slot, item);
+        }
+    }
+
     private void setActionItem(int slot, @NotNull ItemStack item) {
-        gui.setItem(slot, new GuiItem(item, this::handleClick));
+        setItemAt(slot, new GuiItem(item, this::handleClick));
     }
 
     private ItemStack bundleItemStack(@NotNull ClaimShopMenuConfig.BundleItem bundle) {

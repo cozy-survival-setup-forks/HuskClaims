@@ -48,19 +48,22 @@ public class ClaimShopMenuConfig {
             ┣╸ Customise the appearance of the /claimblocks shop
             ┣╸ Supports MiniMessage (https://docs.advntr.dev/minimessage/format.html)
             ┣╸ and legacy codes, including &#RRGGBB hex codes and &a / &l style codes
+            ┣╸ Every item has a slot (0 is the top left corner, counting across each row)
+            ┣╸ Empty slots are filled with filler_material; set it to AIR to leave them empty
             ┣╸ Bundle placeholders: %amount%, %amount_x10%
             ┗╸ Info item placeholders: %quantity%, %unit_price%, %total_cost%
             """;
 
-    private String title = "<dark_gray><b>«</b> <b><#9B8CFF>Claim Block Shop</#9B8CFF></b> <b>»</b>";
+    private String title = "<black>| Claim Block Shop";
 
-    private String borderMaterial = "BLACK_STAINED_GLASS_PANE";
+    private int rows = 6;
 
-    private String accentBorderMaterial = "PURPLE_STAINED_GLASS_PANE";
+    private String fillerMaterial = "BLACK_STAINED_GLASS_PANE";
 
     private List<BundleItem> bundles = Lists.newArrayList(
             BundleItem.builder()
                     .material("PRISMARINE_CRYSTALS")
+                    .slot(11)
                     .name("<b><#66D9E8>SMALL BUNDLE")
                     .amount(100)
                     .lore(List.of(
@@ -68,13 +71,14 @@ public class ClaimShopMenuConfig {
                             "",
                             "<white>A quick top-up of <b><#66D9E8>claim blocks</b><white>.",
                             "",
-                            "<b><#FFB86B>LEFT</b> <dark_gray>→ <gray>Add <white>%amount%",
-                            "<b><#FFB86B>RIGHT</b> <dark_gray>→ <gray>Remove <white>%amount%",
-                            "<b><#FFB86B>SHIFT</b> <dark_gray>→ <gray>Apply <white>%amount_x10%"
+                            "<#EBCB8B>▶ <b><u>LEFT CLICK</u></b> to add %amount%",
+                            "<#EBCB8B>▶ <b><u>RIGHT CLICK</u></b> to remove %amount%",
+                            "<#EBCB8B>▶ <b><u>SHIFT CLICK</u></b> to change by %amount_x10%"
                     ))
                     .build(),
             BundleItem.builder()
                     .material("SUNFLOWER")
+                    .slot(13)
                     .name("<b><#FFD166>MEDIUM BUNDLE")
                     .amount(500)
                     .lore(List.of(
@@ -82,13 +86,14 @@ public class ClaimShopMenuConfig {
                             "",
                             "<white>A solid stack of <b><#FFD166>claim blocks</b><white>.",
                             "",
-                            "<b><#FFB86B>LEFT</b> <dark_gray>→ <gray>Add <white>%amount%",
-                            "<b><#FFB86B>RIGHT</b> <dark_gray>→ <gray>Remove <white>%amount%",
-                            "<b><#FFB86B>SHIFT</b> <dark_gray>→ <gray>Apply <white>%amount_x10%"
+                            "<#EBCB8B>▶ <b><u>LEFT CLICK</u></b> to add %amount%",
+                            "<#EBCB8B>▶ <b><u>RIGHT CLICK</u></b> to remove %amount%",
+                            "<#EBCB8B>▶ <b><u>SHIFT CLICK</u></b> to change by %amount_x10%"
                     ))
                     .build(),
             BundleItem.builder()
                     .material("AMETHYST_SHARD")
+                    .slot(15)
                     .name("<b><#C8A6FF>LARGE BUNDLE")
                     .amount(1000)
                     .lore(List.of(
@@ -96,15 +101,16 @@ public class ClaimShopMenuConfig {
                             "",
                             "<white>Go big with <b><#C8A6FF>a thousand</b><white> blocks.",
                             "",
-                            "<b><#FFB86B>LEFT</b> <dark_gray>→ <gray>Add <white>%amount%",
-                            "<b><#FFB86B>RIGHT</b> <dark_gray>→ <gray>Remove <white>%amount%",
-                            "<b><#FFB86B>SHIFT</b> <dark_gray>→ <gray>Apply <white>%amount_x10%"
+                            "<#EBCB8B>▶ <b><u>LEFT CLICK</u></b> to add %amount%",
+                            "<#EBCB8B>▶ <b><u>RIGHT CLICK</u></b> to remove %amount%",
+                            "<#EBCB8B>▶ <b><u>SHIFT CLICK</u></b> to change by %amount_x10%"
                     ))
                     .build()
     );
 
     private ItemDef infoItem = ItemDef.builder()
             .material("NETHER_STAR")
+            .slot(22)
             .name("<b><#C8A6FF>ORDER SUMMARY")
             .lore(List.of(
                     "<gray>Claim Block Shop",
@@ -117,6 +123,7 @@ public class ClaimShopMenuConfig {
 
     private ItemDef resetItem = ItemDef.builder()
             .material("RECOVERY_COMPASS")
+            .slot(29)
             .name("<b><#FF6B7A>RESET")
             .lore(List.of(
                     "<gray>Claim Block Shop",
@@ -124,12 +131,13 @@ public class ClaimShopMenuConfig {
                     "<white>Put the <#66D9E8>selection <white>back to",
                     "<white>its <#8BF0A6>default <white>amount.",
                     "",
-                    "<b><#FFB86B>LEFT</b> <dark_gray>→ <gray>Reset selection"
+                    "<#EBCB8B>▶ <b><u>CLICK</u></b> to reset"
             ))
             .build();
 
     private ItemDef customAmountItem = ItemDef.builder()
             .material("WRITABLE_BOOK")
+            .slot(31)
             .name("<b><#FFD166>CUSTOM AMOUNT")
             .lore(List.of(
                     "<gray>Claim Block Shop",
@@ -137,12 +145,13 @@ public class ClaimShopMenuConfig {
                     "<white>Type a <#66D9E8>custom <white>amount of",
                     "<#8BF0A6>claim blocks <white>in chat.",
                     "",
-                    "<b><#FFB86B>LEFT</b> <dark_gray>→ <gray>Enter amount"
+                    "<#EBCB8B>▶ <b><u>CLICK</u></b> to enter an amount"
             ))
             .build();
 
     private ItemDef confirmItem = ItemDef.builder()
             .material("LIME_CONCRETE")
+            .slot(33)
             .name("<b><#8BF0A6>CONFIRM PURCHASE")
             .lore(List.of(
                     "<gray>Claim Block Shop",
@@ -150,17 +159,18 @@ public class ClaimShopMenuConfig {
                     "<white>Buy the <#66D9E8>selected <white>amount for",
                     "<white>the <#FF6B7A>total <white>shown above.",
                     "",
-                    "<b><#FFB86B>LEFT</b> <dark_gray>→ <gray>Confirm purchase"
+                    "<#EBCB8B>▶ <b><u>CLICK</u></b> to buy"
             ))
             .build();
 
     private ItemDef closeItem = ItemDef.builder()
             .material("BARRIER")
+            .slot(49)
             .name("<b><#FF6B7A>CLOSE")
             .lore(List.of(
                     "<gray>Claim Block Shop",
                     "",
-                    "<b><#FFB86B>LEFT</b> <dark_gray>→ <gray>Close this menu"
+                    "<#EBCB8B>▶ <b><u>CLICK</u></b> to close"
             ))
             .build();
 
@@ -174,6 +184,8 @@ public class ClaimShopMenuConfig {
         private String name;
         private long amount;
         @Builder.Default
+        private int slot = -1;
+        @Builder.Default
         private List<String> lore = List.of();
     }
 
@@ -185,6 +197,8 @@ public class ClaimShopMenuConfig {
     public static class ItemDef {
         private String material;
         private String name;
+        @Builder.Default
+        private int slot = -1;
         @Builder.Default
         private List<String> lore = List.of();
     }
