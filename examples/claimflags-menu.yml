@@ -1,0 +1,540 @@
+# DeluxeMenus claim settings menu. Needs PlaceholderAPI. Put it in DeluxeMenus/gui_menus and register it in config.yml.
+# Each toggle uses one operation group: its command and its %huskclaims_group_<id>% placeholder.
+open_command:
+  - claimsettings
+  - claimflags
+register_command: true
+size: 45
+menu_title: '&0| Claims - Settings'
+update_interval: 1
+
+items:
+  'filler':
+    material: BLACK_STAINED_GLASS_PANE
+    display_name: '&7'
+    slots: [0-44]
+
+  'information':
+    material: BOOK
+    slot: 4
+    update: true
+    item_flags: &item_flags
+      - HIDE_ATTRIBUTES
+      - HIDE_ENCHANTS
+      - HIDE_ADDITIONAL_TOOLTIP
+      - HIDE_DYE
+      - HIDE_UNBREAKABLE
+    display_name: '&#74C7FF&lCLAIM SETTINGS'
+    lore:
+      - '&#B6C1C8Claims'
+      - ''
+      - '&#FF9558Description:'
+      - '&fManage the &#74C7FFclaim &fyou are'
+      - '&fcurrently standing inside.'
+      - ''
+      - '&#FF9558How does it work?'
+      - '&fClick a setting to &#FFE05Aenable'
+      - '&for &#FF7490disable &fit for this claim.'
+      - ''
+      - '&#B6C1C8You must be allowed to manage'
+      - '&#B6C1C8operation groups in this claim.'
+
+  'no_claim':
+    material: BARRIER
+    slot: 22
+    priority: 20
+    update: true
+    item_flags: *item_flags
+    display_name: '&#FF4361&lNO CLAIM FOUND'
+    lore:
+      - '&#B6C1C8Claims'
+      - ''
+      - '&#FF9558Description:'
+      - '&fStand inside the &#74C7FFclaim &fyou'
+      - '&fwant to configure, then reopen this menu.'
+      - ''
+      - '&#FF4361✘ &#FF4361You are not inside a claim.'
+    view_requirement:
+      requirements:
+        outside_claim:
+          type: string equals
+          input: '%huskclaims_in_claim%'
+          output: 'false'
+
+  'explosions_enabled':
+    material: TNT
+    slot: 10
+    priority: 2
+    update: true
+    item_flags: *item_flags
+    display_name: '&#95FF7E&lCLAIM EXPLOSIONS'
+    lore: &explosions_enabled_lore
+      - '&#B6C1C8Claims'
+      - ''
+      - '&#FF9558Description:'
+      - '&fAllow &#FFE05Aexplosions &fto damage'
+      - '&fterrain inside this claim.'
+      - ''
+      - '&#95FF7E✔ Enabled'
+      - '&7✘ Disabled'
+      - ''
+      - '&#FF9558⏵ &#FF9558&l&nCLICK&r &#FF9558to Disable'
+    view_requirement: &explosions_enabled_requirement
+      requirements:
+        in_claim:
+          type: string equals
+          input: '%huskclaims_in_claim%'
+          output: 'true'
+        enabled:
+          type: string equals
+          input: '%huskclaims_group_explosions%'
+          output: 'true'
+    click_commands:
+      - '[player] claimexplosions off'
+      - '[sound] UI_BUTTON_CLICK'
+      - '[sound] BLOCK_NOTE_BLOCK_BASS 0.3'
+      - '[refresh]'
+
+  'explosions_disabled':
+    material: TNT
+    slot: 10
+    priority: 1
+    update: true
+    item_flags: *item_flags
+    display_name: '&#FF4361&lCLAIM EXPLOSIONS'
+    lore:
+      - '&#B6C1C8Claims'
+      - ''
+      - '&#FF9558Description:'
+      - '&fAllow &#FFE05Aexplosions &fto damage'
+      - '&fterrain inside this claim.'
+      - ''
+      - '&7✔ Enabled'
+      - '&#FF4361✘ Disabled'
+      - ''
+      - '&#FF9558⏵ &#FF9558&l&nCLICK&r &#FF9558to Enable'
+    view_requirement:
+      requirements:
+        in_claim:
+          type: string equals
+          input: '%huskclaims_in_claim%'
+          output: 'true'
+        disabled:
+          type: string equals
+          input: '%huskclaims_group_explosions%'
+          output: 'false'
+    click_commands:
+      - '[player] claimexplosions on'
+      - '[sound] UI_BUTTON_CLICK'
+      - '[sound] ENTITY_EXPERIENCE_ORB_PICKUP'
+      - '[refresh]'
+
+  'pvp_enabled':
+    material: DIAMOND_SWORD
+    slot: 11
+    priority: 2
+    update: true
+    item_flags: *item_flags
+    display_name: '&#95FF7E&lCLAIM PVP'
+    lore:
+      - '&#B6C1C8Claims'
+      - ''
+      - '&#FF9558Description:'
+      - '&fAllow &#74C7FFplayers &fto fight'
+      - '&feach other inside this claim.'
+      - ''
+      - '&#95FF7E✔ Enabled'
+      - '&7✘ Disabled'
+      - ''
+      - '&#FF9558⏵ &#FF9558&l&nCLICK&r &#FF9558to Disable'
+    view_requirement:
+      requirements:
+        in_claim: { type: string equals, input: '%huskclaims_in_claim%', output: 'true' }
+        enabled: { type: string equals, input: '%huskclaims_group_pvp%', output: 'true' }
+    click_commands:
+      - '[player] claimpvp off'
+      - '[sound] UI_BUTTON_CLICK'
+      - '[sound] BLOCK_NOTE_BLOCK_BASS 0.3'
+      - '[refresh]'
+
+  'pvp_disabled':
+    material: WOODEN_SWORD
+    slot: 11
+    priority: 1
+    update: true
+    item_flags: *item_flags
+    display_name: '&#FF4361&lCLAIM PVP'
+    lore:
+      - '&#B6C1C8Claims'
+      - ''
+      - '&#FF9558Description:'
+      - '&fAllow &#74C7FFplayers &fto fight'
+      - '&feach other inside this claim.'
+      - ''
+      - '&7✔ Enabled'
+      - '&#FF4361✘ Disabled'
+      - ''
+      - '&#FF9558⏵ &#FF9558&l&nCLICK&r &#FF9558to Enable'
+    view_requirement:
+      requirements:
+        in_claim: { type: string equals, input: '%huskclaims_in_claim%', output: 'true' }
+        disabled: { type: string equals, input: '%huskclaims_group_pvp%', output: 'false' }
+    click_commands:
+      - '[player] claimpvp on'
+      - '[sound] UI_BUTTON_CLICK'
+      - '[sound] ENTITY_EXPERIENCE_ORB_PICKUP'
+      - '[refresh]'
+
+  'monsters_enabled':
+    material: ZOMBIE_HEAD
+    slot: 12
+    priority: 2
+    update: true
+    item_flags: *item_flags
+    display_name: '&#95FF7E&lMONSTER SPAWNING'
+    lore:
+      - '&#B6C1C8Claims'
+      - ''
+      - '&#FF9558Description:'
+      - '&fAllow &#FFE05Ahostile mobs &fto'
+      - '&fspawn naturally in this claim.'
+      - ''
+      - '&#95FF7E✔ Enabled'
+      - '&7✘ Disabled'
+      - ''
+      - '&#FF9558⏵ &#FF9558&l&nCLICK&r &#FF9558to Disable'
+    view_requirement:
+      requirements:
+        in_claim: { type: string equals, input: '%huskclaims_in_claim%', output: 'true' }
+        enabled: { type: string equals, input: '%huskclaims_group_monsters%', output: 'true' }
+    click_commands:
+      - '[player] claimmonsters off'
+      - '[sound] UI_BUTTON_CLICK'
+      - '[sound] BLOCK_NOTE_BLOCK_BASS 0.3'
+      - '[refresh]'
+
+  'monsters_disabled':
+    material: SKELETON_SKULL
+    slot: 12
+    priority: 1
+    update: true
+    item_flags: *item_flags
+    display_name: '&#FF4361&lMONSTER SPAWNING'
+    lore:
+      - '&#B6C1C8Claims'
+      - ''
+      - '&#FF9558Description:'
+      - '&fAllow &#FFE05Ahostile mobs &fto'
+      - '&fspawn naturally in this claim.'
+      - ''
+      - '&7✔ Enabled'
+      - '&#FF4361✘ Disabled'
+      - ''
+      - '&#FF9558⏵ &#FF9558&l&nCLICK&r &#FF9558to Enable'
+    view_requirement:
+      requirements:
+        in_claim: { type: string equals, input: '%huskclaims_in_claim%', output: 'true' }
+        disabled: { type: string equals, input: '%huskclaims_group_monsters%', output: 'false' }
+    click_commands:
+      - '[player] claimmonsters on'
+      - '[sound] UI_BUTTON_CLICK'
+      - '[sound] ENTITY_EXPERIENCE_ORB_PICKUP'
+      - '[refresh]'
+
+  'animals_enabled':
+    material: COW_SPAWN_EGG
+    slot: 13
+    priority: 2
+    update: true
+    item_flags: *item_flags
+    display_name: '&#95FF7E&lANIMAL SPAWNING'
+    lore:
+      - '&#B6C1C8Claims'
+      - ''
+      - '&#FF9558Description:'
+      - '&fAllow &#B0FF83passive mobs &fto'
+      - '&fspawn naturally in this claim.'
+      - ''
+      - '&#95FF7E✔ Enabled'
+      - '&7✘ Disabled'
+      - ''
+      - '&#FF9558⏵ &#FF9558&l&nCLICK&r &#FF9558to Disable'
+    view_requirement:
+      requirements:
+        in_claim: { type: string equals, input: '%huskclaims_in_claim%', output: 'true' }
+        enabled: { type: string equals, input: '%huskclaims_group_animals%', output: 'true' }
+    click_commands:
+      - '[player] claimanimals off'
+      - '[sound] UI_BUTTON_CLICK'
+      - '[sound] BLOCK_NOTE_BLOCK_BASS 0.3'
+      - '[refresh]'
+
+  'animals_disabled':
+    material: COW_SPAWN_EGG
+    slot: 13
+    priority: 1
+    update: true
+    item_flags: *item_flags
+    display_name: '&#FF4361&lANIMAL SPAWNING'
+    lore:
+      - '&#B6C1C8Claims'
+      - ''
+      - '&#FF9558Description:'
+      - '&fAllow &#B0FF83passive mobs &fto'
+      - '&fspawn naturally in this claim.'
+      - ''
+      - '&7✔ Enabled'
+      - '&#FF4361✘ Disabled'
+      - ''
+      - '&#FF9558⏵ &#FF9558&l&nCLICK&r &#FF9558to Enable'
+    view_requirement:
+      requirements:
+        in_claim: { type: string equals, input: '%huskclaims_in_claim%', output: 'true' }
+        disabled: { type: string equals, input: '%huskclaims_group_animals%', output: 'false' }
+    click_commands:
+      - '[player] claimanimals on'
+      - '[sound] UI_BUTTON_CLICK'
+      - '[sound] ENTITY_EXPERIENCE_ORB_PICKUP'
+      - '[refresh]'
+
+  'fire_enabled':
+    material: FLINT_AND_STEEL
+    slot: 14
+    priority: 2
+    update: true
+    item_flags: *item_flags
+    display_name: '&#95FF7E&lFIRE SPREAD'
+    lore:
+      - '&#B6C1C8Claims'
+      - ''
+      - '&#FF9558Description:'
+      - '&fAllow &#FF7490fire &fto spread'
+      - '&fand burn blocks in this claim.'
+      - ''
+      - '&#95FF7E✔ Enabled'
+      - '&7✘ Disabled'
+      - ''
+      - '&#FF9558⏵ &#FF9558&l&nCLICK&r &#FF9558to Disable'
+    view_requirement:
+      requirements:
+        in_claim: { type: string equals, input: '%huskclaims_in_claim%', output: 'true' }
+        enabled: { type: string equals, input: '%huskclaims_group_fire%', output: 'true' }
+    click_commands:
+      - '[player] claimfire off'
+      - '[sound] UI_BUTTON_CLICK'
+      - '[sound] BLOCK_NOTE_BLOCK_BASS 0.3'
+      - '[refresh]'
+
+  'fire_disabled':
+    material: FIRE_CHARGE
+    slot: 14
+    priority: 1
+    update: true
+    item_flags: *item_flags
+    display_name: '&#FF4361&lFIRE SPREAD'
+    lore:
+      - '&#B6C1C8Claims'
+      - ''
+      - '&#FF9558Description:'
+      - '&fAllow &#FF7490fire &fto spread'
+      - '&fand burn blocks in this claim.'
+      - ''
+      - '&7✔ Enabled'
+      - '&#FF4361✘ Disabled'
+      - ''
+      - '&#FF9558⏵ &#FF9558&l&nCLICK&r &#FF9558to Enable'
+    view_requirement:
+      requirements:
+        in_claim: { type: string equals, input: '%huskclaims_in_claim%', output: 'true' }
+        disabled: { type: string equals, input: '%huskclaims_group_fire%', output: 'false' }
+    click_commands:
+      - '[player] claimfire on'
+      - '[sound] UI_BUTTON_CLICK'
+      - '[sound] ENTITY_EXPERIENCE_ORB_PICKUP'
+      - '[refresh]'
+
+  'pearls_enabled':
+    material: ENDER_PEARL
+    slot: 15
+    priority: 2
+    update: true
+    item_flags: *item_flags
+    display_name: '&#95FF7E&lENDER PEARLS'
+    lore:
+      - '&#B6C1C8Claims'
+      - ''
+      - '&#FF9558Description:'
+      - '&fAllow &#74C7FFender pearls &fto'
+      - '&fteleport players into this claim.'
+      - ''
+      - '&#95FF7E✔ Enabled'
+      - '&7✘ Disabled'
+      - ''
+      - '&#FF9558⏵ &#FF9558&l&nCLICK&r &#FF9558to Disable'
+    view_requirement:
+      requirements:
+        in_claim: { type: string equals, input: '%huskclaims_in_claim%', output: 'true' }
+        enabled: { type: string equals, input: '%huskclaims_group_pearls%', output: 'true' }
+    click_commands:
+      - '[player] claimpearls off'
+      - '[sound] UI_BUTTON_CLICK'
+      - '[sound] BLOCK_NOTE_BLOCK_BASS 0.3'
+      - '[refresh]'
+
+  'pearls_disabled':
+    material: ENDER_PEARL
+    slot: 15
+    priority: 1
+    update: true
+    item_flags: *item_flags
+    display_name: '&#FF4361&lENDER PEARLS'
+    lore:
+      - '&#B6C1C8Claims'
+      - ''
+      - '&#FF9558Description:'
+      - '&fAllow &#74C7FFender pearls &fto'
+      - '&fteleport players into this claim.'
+      - ''
+      - '&7✔ Enabled'
+      - '&#FF4361✘ Disabled'
+      - ''
+      - '&#FF9558⏵ &#FF9558&l&nCLICK&r &#FF9558to Enable'
+    view_requirement:
+      requirements:
+        in_claim: { type: string equals, input: '%huskclaims_in_claim%', output: 'true' }
+        disabled: { type: string equals, input: '%huskclaims_group_pearls%', output: 'false' }
+    click_commands:
+      - '[player] claimpearls on'
+      - '[sound] UI_BUTTON_CLICK'
+      - '[sound] ENTITY_EXPERIENCE_ORB_PICKUP'
+      - '[refresh]'
+
+  'raids_enabled':
+    material: OMINOUS_BOTTLE
+    slot: 16
+    priority: 2
+    update: true
+    item_flags: *item_flags
+    display_name: '&#95FF7E&lRAIDS'
+    lore:
+      - '&#B6C1C8Claims'
+      - ''
+      - '&#FF9558Description:'
+      - '&fAllow &#FFE05Araids &fto start'
+      - '&finside the borders of this claim.'
+      - ''
+      - '&#95FF7E✔ Enabled'
+      - '&7✘ Disabled'
+      - ''
+      - '&#FF9558⏵ &#FF9558&l&nCLICK&r &#FF9558to Disable'
+    view_requirement:
+      requirements:
+        in_claim: { type: string equals, input: '%huskclaims_in_claim%', output: 'true' }
+        enabled: { type: string equals, input: '%huskclaims_group_raids%', output: 'true' }
+    click_commands:
+      - '[player] claimraids off'
+      - '[sound] UI_BUTTON_CLICK'
+      - '[sound] BLOCK_NOTE_BLOCK_BASS 0.3'
+      - '[refresh]'
+
+  'raids_disabled':
+    material: GLASS_BOTTLE
+    slot: 16
+    priority: 1
+    update: true
+    item_flags: *item_flags
+    display_name: '&#FF4361&lRAIDS'
+    lore:
+      - '&#B6C1C8Claims'
+      - ''
+      - '&#FF9558Description:'
+      - '&fAllow &#FFE05Araids &fto start'
+      - '&finside the borders of this claim.'
+      - ''
+      - '&7✔ Enabled'
+      - '&#FF4361✘ Disabled'
+      - ''
+      - '&#FF9558⏵ &#FF9558&l&nCLICK&r &#FF9558to Enable'
+    view_requirement:
+      requirements:
+        in_claim: { type: string equals, input: '%huskclaims_in_claim%', output: 'true' }
+        disabled: { type: string equals, input: '%huskclaims_group_raids%', output: 'false' }
+    click_commands:
+      - '[player] claimraids on'
+      - '[sound] UI_BUTTON_CLICK'
+      - '[sound] ENTITY_EXPERIENCE_ORB_PICKUP'
+      - '[refresh]'
+
+  'spawn_eggs_enabled':
+    material: CREEPER_SPAWN_EGG
+    slot: 22
+    priority: 2
+    update: true
+    item_flags: *item_flags
+    display_name: '&#95FF7E&lSPAWN EGGS'
+    lore:
+      - '&#B6C1C8Claims'
+      - ''
+      - '&#FF9558Description:'
+      - '&fAllow &#FF7490spawn eggs &fto be'
+      - '&fused inside this claim.'
+      - ''
+      - '&#95FF7E✔ Enabled'
+      - '&7✘ Disabled'
+      - ''
+      - '&#FF9558⏵ &#FF9558&l&nCLICK&r &#FF9558to Disable'
+    view_requirement:
+      requirements:
+        in_claim: { type: string equals, input: '%huskclaims_in_claim%', output: 'true' }
+        enabled: { type: string equals, input: '%huskclaims_group_spawn_eggs%', output: 'true' }
+    click_commands:
+      - '[player] claimeggs off'
+      - '[sound] UI_BUTTON_CLICK'
+      - '[sound] BLOCK_NOTE_BLOCK_BASS 0.3'
+      - '[refresh]'
+
+  'spawn_eggs_disabled':
+    material: CREEPER_SPAWN_EGG
+    slot: 22
+    priority: 1
+    update: true
+    item_flags: *item_flags
+    display_name: '&#FF4361&lSPAWN EGGS'
+    lore:
+      - '&#B6C1C8Claims'
+      - ''
+      - '&#FF9558Description:'
+      - '&fAllow &#FF7490spawn eggs &fto be'
+      - '&fused inside this claim.'
+      - ''
+      - '&7✔ Enabled'
+      - '&#FF4361✘ Disabled'
+      - ''
+      - '&#FF9558⏵ &#FF9558&l&nCLICK&r &#FF9558to Enable'
+    view_requirement:
+      requirements:
+        in_claim: { type: string equals, input: '%huskclaims_in_claim%', output: 'true' }
+        disabled: { type: string equals, input: '%huskclaims_group_spawn_eggs%', output: 'false' }
+    click_commands:
+      - '[player] claimeggs on'
+      - '[sound] UI_BUTTON_CLICK'
+      - '[sound] ENTITY_EXPERIENCE_ORB_PICKUP'
+      - '[refresh]'
+
+  'return':
+    material: GLOBE_BANNER_PATTERN
+    slot: 40
+    item_flags: *item_flags
+    display_name: '&#FF4361&lRETURN'
+    lore:
+      - '&#B6C1C8Claims'
+      - ''
+      - '&#FF9558Description:'
+      - '&fClick this button to'
+      - '&freturn to the settings menu.'
+      - ''
+      - '&#FF9558⏵ &#FF9558&l&nCLICK&r &#FF9558to Return'
+    click_commands:
+      - '[openguimenu] settings'
+      - '[sound] UI_BUTTON_CLICK'
+      - '[sound] BLOCK_NOTE_BLOCK_BASS 0.3'

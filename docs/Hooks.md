@@ -63,6 +63,8 @@ If PlaceholderAPI is installed, HuskClaims will register a PlaceholderAPI expans
 |------------------------------------------|----------------------------------------------------------------------------|-----------------------------------|
 | `%huskclaims_claim_blocks%`              | The number of [[claim blocks]] the player has                              | `100`, `1234`, etc.               |
 | `%huskclaims_current_is_claimed%`        | Whether the player is currently standing in a claim                        | `true` or `false`                 |
+| `%huskclaims_in_claim%`                  | Like the above, but always `true` or `false`                              | `true` or `false`                 |
+| `%huskclaims_group_<id>%`                | Whether an [[operation group]] (`explosions`, `pvp`, `monsters`, `animals`, `fire`, `pearls`, `raids`, `spawn_eggs`) is on in the claim the player is standing in | `true`, `false` or `no_claim`     |
 | `%huskclaims_current_claim_owner%`       | The owner of the claim the player is standing in                           | `Steve`, `an administrator`, etc. |
 | `%huskclaims_current_claim_is_trusted%`  | Whether the player has a [[trust level]] in the claim they are standing in | `true` or `false`                 |
 | `%huskclaims_current_claim_trust_level%` | The trust level of the player in the claim they are standing in            | `Access`, `Container`, etc.       |

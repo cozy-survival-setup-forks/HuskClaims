@@ -331,16 +331,34 @@ public final class Settings {
 
     @Comment("Groups of operations that can be toggled on/off in claims")
     public List<OperationGroup> operationGroups = List.of(
-            OperationGroup.builder()
-                    .name("Claim Explosions")
-                    .description("Toggle whether explosions can damage terrain in claims")
-                    .allowedOperations(Set.of(
-                            OperationType.EXPLOSION_DAMAGE_TERRAIN,
-                            OperationType.MONSTER_DAMAGE_TERRAIN
-                    ))
-                    .toggleCommandAliases(List.of("claimexplosions"))
-                    .build()
+            group("explosions", "Claim Explosions", "Toggle whether explosions can damage terrain in claims",
+                    "claimexplosions", OperationType.EXPLOSION_DAMAGE_TERRAIN, OperationType.MONSTER_DAMAGE_TERRAIN),
+            group("pvp", "Claim PvP", "Toggle whether players can fight each other in claims",
+                    "claimpvp", OperationType.PLAYER_DAMAGE_PLAYER),
+            group("monsters", "Monster Spawning", "Toggle whether hostile mobs can spawn naturally in claims",
+                    "claimmonsters", OperationType.MONSTER_SPAWN),
+            group("animals", "Animal Spawning", "Toggle whether passive mobs can spawn naturally in claims",
+                    "claimanimals", OperationType.PASSIVE_MOB_SPAWN),
+            group("fire", "Fire Spread", "Toggle whether fire can spread and burn blocks in claims",
+                    "claimfire", OperationType.FIRE_SPREAD, OperationType.FIRE_BURN),
+            group("pearls", "Ender Pearls", "Toggle whether ender pearls can teleport players into claims",
+                    "claimpearls", OperationType.ENDER_PEARL_TELEPORT),
+            group("raids", "Raids", "Toggle whether raids can start inside claims",
+                    "claimraids", OperationType.START_RAID),
+            group("spawn_eggs", "Spawn Eggs", "Toggle whether spawn eggs can be used in claims",
+                    "claimeggs", OperationType.USE_SPAWN_EGG)
     );
+
+    private static OperationGroup group(String id, String name, String description, String command,
+                                        OperationType... operations) {
+        return OperationGroup.builder()
+                .id(id)
+                .name(name)
+                .description(description)
+                .toggleCommandAliases(List.of(command))
+                .allowedOperations(new LinkedHashSet<>(Arrays.asList(operations)))
+                .build();
+    }
 
     @Getter
     @Builder
@@ -348,10 +366,25 @@ public final class Settings {
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public static class OperationGroup {
+        private String id;
         private String name;
         private String description;
         private List<String> toggleCommandAliases;
         private Set<OperationType> allowedOperations;
+
+        /**
+         * The id used by placeholders. Groups from older configs have none, so it comes from the first command
+         * (claimexplosions becomes explosions).
+         */
+        @NotNull
+        public String getPlaceholderId() {
+            if (id != null && !id.isBlank()) {
+                return id.toLowerCase(Locale.ENGLISH);
+            }
+            final String alias = toggleCommandAliases.isEmpty() ? name : toggleCommandAliases.get(0);
+            final String lower = alias.toLowerCase(Locale.ENGLISH).replace(' ', '_');
+            return lower.startsWith("claim") && lower.length() > 5 ? lower.substring(5) : lower;
+        }
     }
 
     @Comment("Settings for user groups, letting users quickly manage trust for groups of multiple players at once")

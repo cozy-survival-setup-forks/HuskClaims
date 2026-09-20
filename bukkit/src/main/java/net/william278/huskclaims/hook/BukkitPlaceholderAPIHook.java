@@ -29,6 +29,7 @@ import net.william278.cloplib.operation.Operation;
 import net.william278.cloplib.operation.OperationType;
 import net.william278.huskclaims.BukkitHuskClaims;
 import net.william278.huskclaims.HuskClaims;
+import net.william278.huskclaims.config.Settings;
 import net.william278.huskclaims.trust.TrustLevel;
 import net.william278.huskclaims.user.OnlineUser;
 import org.bukkit.entity.Player;
@@ -119,6 +120,7 @@ public class BukkitPlaceholderAPIHook extends Hook {
                 return String.format("%,d", started + Math.max(0, earned));
             }),
             CURRENT_IS_CLAIMED((plugin, user) -> formatBoolean(plugin.getClaimAt(user.getPosition()).isPresent())),
+            IN_CLAIM((plugin, user) -> Boolean.toString(plugin.getClaimAt(user.getPosition()).isPresent())),
             CURRENT_CLAIM_OWNER((plugin, user) -> plugin.getClaimWorld(user.getPosition().getWorld())
                     .flatMap(world -> world.getClaimAt(user.getPosition())
                             .map(claim -> claim.getOwnerName(world, plugin)))
@@ -143,6 +145,7 @@ public class BukkitPlaceholderAPIHook extends Hook {
             )));
 
             private static final String IDENTIFIER = "huskclaims";
+            private static final String GROUP_PREFIX = "group_";
             private static final Map<String, Placeholder> IDENTIFIER_MAP = Arrays.stream(values())
                     .map(p -> Map.entry(p.name().toLowerCase(Locale.ENGLISH), p))
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
@@ -151,7 +154,25 @@ public class BukkitPlaceholderAPIHook extends Hook {
 
             @Nullable
             public static String format(@NotNull HuskClaims plugin, @NotNull OnlineUser user, @NotNull String id) {
+                if (id.startsWith(GROUP_PREFIX)) {
+                    return formatGroup(plugin, user, id.substring(GROUP_PREFIX.length()));
+                }
                 return IDENTIFIER_MAP.containsKey(id) ? IDENTIFIER_MAP.get(id).resolve(plugin, user) : null;
+            }
+
+            // %huskclaims_group_<id>%: true or false for the operation group in the claim the player is in,
+            // no_claim outside claims, and null (unknown placeholder) when no group has that id
+            @Nullable
+            private static String formatGroup(@NotNull HuskClaims plugin, @NotNull OnlineUser user, @NotNull String id) {
+                final Settings.OperationGroup group = plugin.getSettings().getOperationGroups().stream()
+                        .filter(g -> g.getPlaceholderId().equals(id))
+                        .findFirst().orElse(null);
+                if (group == null) {
+                    return null;
+                }
+                return plugin.getClaimAt(user.getPosition())
+                        .map(claim -> Boolean.toString(claim.getDefaultFlags().containsAll(group.getAllowedOperations())))
+                        .orElse("no_claim");
             }
 
             @NotNull

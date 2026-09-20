@@ -265,7 +265,7 @@ This is a table of HuskClaims commands, how to use them, their required permissi
         </tr>
         <!-- /claimexplosions command -->
         <tr><th colspan="5">Operation group commands</th></tr>
-        <tr><td colspan="5" align="center">Lets users toggle groups of operation type flags. Only one is configured by default:</td></tr>
+        <tr><td colspan="5" align="center">Lets users toggle groups of operation type flags. Eight are configured by default (<code>/claimexplosions</code>, <code>/claimpvp</code>, <code>/claimmonsters</code>, <code>/claimanimals</code>, <code>/claimfire</code>, <code>/claimpearls</code>, <code>/claimraids</code> and <code>/claimeggs</code>), all with the permissions below. See <a href="Operation-Groups">Operation Groups</a>:</td></tr>
         <tr>
             <td rowspan="2"><code>/claimexplosions</code></td>
             <td rowspan="2"><code>/claimexplosions [on|off]</code></td>

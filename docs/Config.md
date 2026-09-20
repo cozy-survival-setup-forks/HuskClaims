@@ -193,13 +193,64 @@ claims:
     private_claims: false
 # Groups of operations that can be toggled on/off in claims
 operation_groups:
-  - name: Claim Explosions
+  - id: explosions
+    name: Claim Explosions
     description: Toggle whether explosions can damage terrain in claims
     toggle_command_aliases:
       - claimexplosions
     allowed_operations:
-      - monster_damage_terrain
       - explosion_damage_terrain
+      - monster_damage_terrain
+  - id: pvp
+    name: Claim PvP
+    description: Toggle whether players can fight each other in claims
+    toggle_command_aliases:
+      - claimpvp
+    allowed_operations:
+      - player_damage_player
+  - id: monsters
+    name: Monster Spawning
+    description: Toggle whether hostile mobs can spawn naturally in claims
+    toggle_command_aliases:
+      - claimmonsters
+    allowed_operations:
+      - monster_spawn
+  - id: animals
+    name: Animal Spawning
+    description: Toggle whether passive mobs can spawn naturally in claims
+    toggle_command_aliases:
+      - claimanimals
+    allowed_operations:
+      - passive_mob_spawn
+  - id: fire
+    name: Fire Spread
+    description: Toggle whether fire can spread and burn blocks in claims
+    toggle_command_aliases:
+      - claimfire
+    allowed_operations:
+      - fire_spread
+      - fire_burn
+  - id: pearls
+    name: Ender Pearls
+    description: Toggle whether ender pearls can teleport players into claims
+    toggle_command_aliases:
+      - claimpearls
+    allowed_operations:
+      - ender_pearl_teleport
+  - id: raids
+    name: Raids
+    description: Toggle whether raids can start inside claims
+    toggle_command_aliases:
+      - claimraids
+    allowed_operations:
+      - start_raid
+  - id: spawn_eggs
+    name: Spawn Eggs
+    description: Toggle whether spawn eggs can be used in claims
+    toggle_command_aliases:
+      - claimeggs
+    allowed_operations:
+      - use_spawn_egg
 # Settings for user groups, letting users quickly manage trust for groups of multiple players at once
 user_groups:
   # Whether to enable user groups

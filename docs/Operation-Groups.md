@@ -3,11 +3,22 @@ HuskClaims supports toggling Operation Groups within a claim to determine whethe
 ## Toggling Operation Groups
 Operation Groups can be configured in the plugin [[config]] and managed by any user who has the `MANAGE_OPERATION_GROUPS` [[trust]] privilege in a claim. Effectively, Operation Groups provide a way of letting players fine tune the flag settings of your claim. 
 
-By default, HuskClaims provides the `Claim Explosions` operation group to let you toggle whether explosion damage should be allowed in a claim.
+By default, HuskClaims provides the operation groups below. Each one has a toggle command, `/<command> [on|off]`, and a `%huskclaims_group_<id>%` placeholder that says whether it is on in the claim the player is standing in (`true`, `false`, or `no_claim`), which is what a settings menu needs.
 
-| Operation Group    | Toggle Command     | Description                                                                                            | Default |
-|--------------------|--------------------|--------------------------------------------------------------------------------------------------------|:-------:|
-| `Claim Explosions` | `/claimexplosions` | Toggle whether explosion block damage should be allowed in a claim. Includes block and mob explosions. |    ❌    |
+| Operation Group | Toggle Command | Placeholder | Allows | Default |
+|---|---|---|---|:-:|
+| `Claim Explosions` | `/claimexplosions` | `%huskclaims_group_explosions%` | Explosion block damage, from blocks and mobs (`explosion_damage_terrain, monster_damage_terrain`) | ❌ |
+| `Claim PvP` | `/claimpvp` | `%huskclaims_group_pvp%` | Players fighting each other (`player_damage_player`) | ✅ |
+| `Monster Spawning` | `/claimmonsters` | `%huskclaims_group_monsters%` | Hostile mobs spawning naturally (`monster_spawn`) | ✅ |
+| `Animal Spawning` | `/claimanimals` | `%huskclaims_group_animals%` | Passive mobs spawning naturally (`passive_mob_spawn`) | ✅ |
+| `Fire Spread` | `/claimfire` | `%huskclaims_group_fire%` | Fire spreading and burning blocks (`fire_spread, fire_burn`) | ❌ |
+| `Ender Pearls` | `/claimpearls` | `%huskclaims_group_pearls%` | Ender pearl teleports into the claim (`ender_pearl_teleport`) | ❌ |
+| `Raids` | `/claimraids` | `%huskclaims_group_raids%` | Raids starting inside the claim (`start_raid`) | ❌ |
+| `Spawn Eggs` | `/claimeggs` | `%huskclaims_group_spawn_eggs%` | Spawn eggs being used in the claim (`use_spawn_egg`) | ❌ |
+
+"Default" follows the `default_flags` list in the config. These groups are only written to `config.yml` when it is created; an existing config keeps the groups it already has, so copy the entries below into `operation_groups` to get the new ones.
+
+An example DeluxeMenus settings menu that uses these commands and placeholders is in [`examples/claimflags-menu.yml`](https://github.com/cozy-survival-setup-forks/HuskClaims/blob/master/examples/claimflags-menu.yml).
 
 ## Wilderness Redstone Restrictions
 HuskClaims includes a `redstone_actuate` operation type that controls whether redstone mechanisms (pistons, dispensers, etc.) can function. This provides similar functionality to GriefPrevention's redstone restrictions and is **enabled by default** in wilderness areas.
@@ -27,13 +38,64 @@ Operation groups can be customised in the plugin config as follows:
 ```yaml
 # Groups of operations that can be toggled on/off in claims
 operation_groups:
-- name: Claim Explosions
+- id: explosions
+  name: Claim Explosions
   description: Toggle whether explosions can damage terrain in claims
   toggle_command_aliases:
   - claimexplosions
   allowed_operations:
   - explosion_damage_terrain
   - monster_damage_terrain
+- id: pvp
+  name: Claim PvP
+  description: Toggle whether players can fight each other in claims
+  toggle_command_aliases:
+  - claimpvp
+  allowed_operations:
+  - player_damage_player
+- id: monsters
+  name: Monster Spawning
+  description: Toggle whether hostile mobs can spawn naturally in claims
+  toggle_command_aliases:
+  - claimmonsters
+  allowed_operations:
+  - monster_spawn
+- id: animals
+  name: Animal Spawning
+  description: Toggle whether passive mobs can spawn naturally in claims
+  toggle_command_aliases:
+  - claimanimals
+  allowed_operations:
+  - passive_mob_spawn
+- id: fire
+  name: Fire Spread
+  description: Toggle whether fire can spread and burn blocks in claims
+  toggle_command_aliases:
+  - claimfire
+  allowed_operations:
+  - fire_spread
+  - fire_burn
+- id: pearls
+  name: Ender Pearls
+  description: Toggle whether ender pearls can teleport players into claims
+  toggle_command_aliases:
+  - claimpearls
+  allowed_operations:
+  - ender_pearl_teleport
+- id: raids
+  name: Raids
+  description: Toggle whether raids can start inside claims
+  toggle_command_aliases:
+  - claimraids
+  allowed_operations:
+  - start_raid
+- id: spawn_eggs
+  name: Spawn Eggs
+  description: Toggle whether spawn eggs can be used in claims
+  toggle_command_aliases:
+  - claimeggs
+  allowed_operations:
+  - use_spawn_egg
 ```
 </details>
 
