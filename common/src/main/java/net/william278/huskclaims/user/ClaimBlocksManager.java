@@ -28,8 +28,10 @@ import org.jetbrains.annotations.Nullable;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -42,6 +44,12 @@ public interface ClaimBlocksManager {
     // Permission to grant hourly claim blocks
     String HOURLY_BLOCKS_PERMISSION = "huskclaims.hourly_blocks.";
     String MAX_CLAIM_BLOCKS_PERMISSION = "huskclaims.max_claim_blocks.";
+
+    // editClaimBlocks() reads a user's balance, then writes a new one back later; two calls for the
+    // same user at once (shop purchase + hourly grant, two purchases, etc.) can both read the old
+    // balance and one write clobbers the other, gaining or losing claim blocks. One lock per user id
+    // serializes those read-modify-write sections so nothing gets lost or duplicated.
+    Map<UUID, Object> CLAIM_BLOCK_LOCKS = new ConcurrentHashMap<>();
 
     Optional<SavedUser> getCachedSavedUser(@NotNull UUID uuid);
 
@@ -82,39 +90,41 @@ public interface ClaimBlocksManager {
     @Blocking
     default void editClaimBlocks(@NotNull User user, @NotNull SavedUserProvider.ClaimBlockSource source,
                                  @NotNull Function<Long, Long> consumer, @Nullable Consumer<Long> callback) {
-        // Determine max claim blocks
-        long maxClaimBlocks = getPlugin().getSettings().getClaims().getMaximumClaimBlocks();
-        if (user instanceof OnlineUser onlineUser) {
-            maxClaimBlocks = onlineUser.getNumericalPermission(MAX_CLAIM_BLOCKS_PERMISSION).orElse(maxClaimBlocks);
-        }
-        if (maxClaimBlocks < 0) {
-            maxClaimBlocks = Long.MAX_VALUE;
-        }
+        synchronized (CLAIM_BLOCK_LOCKS.computeIfAbsent(user.getUuid(), id -> new Object())) {
+            // Determine max claim blocks
+            long maxClaimBlocks = getPlugin().getSettings().getClaims().getMaximumClaimBlocks();
+            if (user instanceof OnlineUser onlineUser) {
+                maxClaimBlocks = onlineUser.getNumericalPermission(MAX_CLAIM_BLOCKS_PERMISSION).orElse(maxClaimBlocks);
+            }
+            if (maxClaimBlocks < 0) {
+                maxClaimBlocks = Long.MAX_VALUE;
+            }
 
-        // Calculate block balance
-        long originalBlocks = getPlugin().getClaimBlocks(user.getUuid());
-        long spent = getPlugin().getSpentClaimBlocks(user.getUuid());
-        long currentTotal = originalBlocks + spent;
-        long newTotal = consumer.apply(currentTotal);
-        long finalTotal = Math.min(newTotal, maxClaimBlocks);
-        final long newBlocks = finalTotal - spent;
-        if (newBlocks < 0) {
-            throw new IllegalArgumentException("Claim blocks cannot be negative (%s)".formatted(newBlocks));
-        }
+            // Calculate block balance
+            long originalBlocks = getPlugin().getClaimBlocks(user.getUuid());
+            long spent = getPlugin().getSpentClaimBlocks(user.getUuid());
+            long currentTotal = originalBlocks + spent;
+            long newTotal = consumer.apply(currentTotal);
+            long finalTotal = Math.min(newTotal, maxClaimBlocks);
+            final long newBlocks = finalTotal - spent;
+            if (newBlocks < 0) {
+                throw new IllegalArgumentException("Claim blocks cannot be negative (%s)".formatted(newBlocks));
+            }
 
-        // Fire the event, update the blocks, trigger callback
-        getPlugin().fireClaimBlocksChangeEvent(
-                user, originalBlocks, newBlocks, source,
-                (event) -> editSavedUser(user.getUuid(), (savedUser) -> {
-                    if (source != ClaimBlockSource.HOURLY_BLOCKS) {
-                        savedUser.getPreferences().log(source, newBlocks);
-                    }
-                    savedUser.setClaimBlocks(newBlocks);
-                    if (callback != null) {
-                        callback.accept(newBlocks);
-                    }
-                })
-        );
+            // Fire the event, update the blocks, trigger callback
+            getPlugin().fireClaimBlocksChangeEvent(
+                    user, originalBlocks, newBlocks, source,
+                    (event) -> editSavedUser(user.getUuid(), (savedUser) -> {
+                        if (source != ClaimBlockSource.HOURLY_BLOCKS) {
+                            savedUser.getPreferences().log(source, newBlocks);
+                        }
+                        savedUser.setClaimBlocks(newBlocks);
+                        if (callback != null) {
+                            callback.accept(newBlocks);
+                        }
+                    })
+            );
+        }
     }
 
     @Blocking
