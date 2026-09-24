@@ -72,6 +72,10 @@ public class ClaimWorld {
     @Expose
     @SerializedName("wilderness_flags")
     private Set<OperationType> wildernessFlags;
+    // Operation types that existed when this world was last saved, so types added later can be allowed by default
+    @Expose
+    @SerializedName("known_operation_types")
+    private Set<OperationType> knownOperationTypes;
     @Expose
     @SerializedName("cached_claims")
     private Long2ObjectMap<Set<Claim>> cachedClaims;
@@ -86,6 +90,7 @@ public class ClaimWorld {
         this.id = 0;
         this.userCache = new ConcurrentObject2ObjectMap<>(INITIAL_USER_CACHE_CAPACITY, PERFORMANCE_LOAD_FACTOR);
         this.wildernessFlags = Sets.newCopyOnWriteArraySet(plugin.getSettings().getClaims().getWildernessRules());
+        this.knownOperationTypes = Sets.newCopyOnWriteArraySet(OperationType.getRegistered());
         this.cachedClaims = new ConcurrentLong2ObjectMap<>(INITIAL_CHUNK_CACHE_CAPACITY, PERFORMANCE_LOAD_FACTOR);
         this.userClaims = new ConcurrentObject2ObjectMap<>(INITIAL_USER_CACHE_CAPACITY, PERFORMANCE_LOAD_FACTOR);
         this.schemaVersion = CURRENT_SCHEMA;
@@ -107,6 +112,7 @@ public class ClaimWorld {
         final ClaimWorld world = new ClaimWorld();
         world.userCache = new ConcurrentHashMap<>(userCache);
         world.wildernessFlags = Sets.newCopyOnWriteArraySet(wildernessFlags);
+        world.knownOperationTypes = Sets.newCopyOnWriteArraySet();
         world.cachedClaims = new ConcurrentLong2ObjectMap<>(INITIAL_CHUNK_CACHE_CAPACITY, PERFORMANCE_LOAD_FACTOR);
         world.userClaims = new ConcurrentObject2ObjectMap<>(INITIAL_USER_CACHE_CAPACITY, PERFORMANCE_LOAD_FACTOR);
         world.schemaVersion = CURRENT_SCHEMA;
@@ -538,6 +544,7 @@ public class ClaimWorld {
         this.userCache = new ConcurrentObject2ObjectMap<>(INITIAL_USER_CACHE_CAPACITY, PERFORMANCE_LOAD_FACTOR);
         this.userClaims = new ConcurrentObject2ObjectMap<>(INITIAL_USER_CACHE_CAPACITY, PERFORMANCE_LOAD_FACTOR);
         this.wildernessFlags = Sets.newCopyOnWriteArraySet();
+        this.knownOperationTypes = Sets.newCopyOnWriteArraySet();
         claims.forEach(this::cacheClaim);
     }
 
@@ -580,6 +587,28 @@ public class ClaimWorld {
                     .ifPresent(((OnlineUser) user)::sendMessage));
         }
         return false;
+    }
+
+    /**
+     * Allow, in the wilderness, every operation type that was registered after this world was last saved. Worlds keep
+     * their own list of wilderness flags, so without this a type added by an update is blocked outside claims until an
+     * admin sets it with /claimflags. Types that were known and switched off stay off.
+     *
+     * @return true if anything was added, so the world should be saved
+     */
+    @ApiStatus.Internal
+    public boolean allowNewOperationTypesInWilderness() {
+        if (knownOperationTypes == null) {
+            knownOperationTypes = Sets.newCopyOnWriteArraySet();
+        }
+        boolean changed = false;
+        for (OperationType type : OperationType.getRegistered()) {
+            if (knownOperationTypes.add(type)) {
+                wildernessFlags.add(type);
+                changed = true;
+            }
+        }
+        return changed;
     }
 
     // Check if an operation is allowed in the wilderness

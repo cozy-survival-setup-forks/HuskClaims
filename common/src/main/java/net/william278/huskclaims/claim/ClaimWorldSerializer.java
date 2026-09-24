@@ -57,6 +57,10 @@ public class ClaimWorldSerializer implements JsonSerializer<ClaimWorld>, JsonDes
         claimWorld.getWildernessFlags().forEach(w -> wildernessFlags.add(w.toString()));
         jsonObject.add("wilderness_flags", wildernessFlags);
 
+        final JsonArray knownTypes = new JsonArray();
+        claimWorld.getKnownOperationTypes().forEach(t -> knownTypes.add(t.toString()));
+        jsonObject.add("known_operation_types", knownTypes);
+
         jsonObject.add("schema_version", new JsonPrimitive(claimWorld.getSchemaVersion()));
 
         return jsonObject;
@@ -80,6 +84,12 @@ public class ClaimWorldSerializer implements JsonSerializer<ClaimWorld>, JsonDes
 
         final JsonArray wildernessFlags = jsonObject.has("wilderness_flags") ? jsonObject.getAsJsonArray("wilderness_flags") : new JsonArray();
         wildernessFlags.forEach(w -> claimWorld.getWildernessFlags().add(OperationType.getOrCreate(w.getAsString())));
+
+        if (jsonObject.has("known_operation_types")) {
+            jsonObject.getAsJsonArray("known_operation_types").forEach(t ->
+                    claimWorld.getKnownOperationTypes().add(OperationType.getOrCreate(t.getAsString())));
+        }
+        claimWorld.allowNewOperationTypesInWilderness();
 
         claimWorld.setSchemaVersion(jsonObject.has("schema_version")
                 ? jsonObject.get("schema_version").getAsInt() : ClaimWorld.CURRENT_SCHEMA);
