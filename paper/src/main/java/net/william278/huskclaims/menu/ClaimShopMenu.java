@@ -294,7 +294,7 @@ public final class ClaimShopMenu {
         return stack;
     }
 
-    private static Component text(@NotNull String input) {
+    static Component text(@NotNull String input) {
         return MiniMessage.miniMessage().deserialize(legacyToMiniMessage(input))
                 .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE);
     }

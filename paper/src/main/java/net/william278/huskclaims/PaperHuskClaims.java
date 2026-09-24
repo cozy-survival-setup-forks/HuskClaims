@@ -25,6 +25,7 @@ import net.kyori.adventure.audience.Audience;
 import net.william278.huskclaims.highlighter.PaperBlockDisplayHighlighter;
 import net.william278.huskclaims.listener.ClaimsListener;
 import net.william278.huskclaims.listener.PaperListener;
+import net.william278.huskclaims.menu.ClaimFlagsMenu;
 import net.william278.huskclaims.menu.ClaimShopMenu;
 import net.william278.huskclaims.position.Position;
 import net.william278.huskclaims.user.BukkitUser;
@@ -81,6 +82,20 @@ public class PaperHuskClaims extends BukkitHuskClaims {
         runSync(player, () -> {
             if (player.isOnline()) {
                 new ClaimShopMenu(this, player).open();
+            }
+        });
+        return true;
+    }
+
+    @Override
+    public boolean openClaimSettings(@NotNull OnlineUser user) {
+        if (!(user instanceof BukkitUser bukkitUser)) {
+            return false;
+        }
+        final Player player = bukkitUser.getBukkitPlayer();
+        runSync(player, () -> {
+            if (player.isOnline()) {
+                new ClaimFlagsMenu(this, player).open();
             }
         });
         return true;

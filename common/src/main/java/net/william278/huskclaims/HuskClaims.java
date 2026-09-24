@@ -67,6 +67,7 @@ public interface HuskClaims extends Task.Supplier, ConfigProvider, UserProvider,
             loadTrustLevels();
             loadLocales();
             loadClaimShopMenuConfig();
+            loadClaimFlagsMenuConfig();
             loadHooks(PluginHook.Register.values());
             registerHooks(PluginHook.Register.ON_LOAD);
         } catch (Throwable e) {
@@ -162,6 +163,16 @@ public interface HuskClaims extends Task.Supplier, ConfigProvider, UserProvider,
      * @return {@code true} if a shop was opened
      */
     default boolean openClaimShop(@NotNull OnlineUser user) {
+        return false;
+    }
+
+    /**
+     * Open the platform claim settings menu, if one is available.
+     *
+     * @param user the user opening the menu
+     * @return {@code true} if a menu was opened
+     */
+    default boolean openClaimSettings(@NotNull OnlineUser user) {
         return false;
     }
 

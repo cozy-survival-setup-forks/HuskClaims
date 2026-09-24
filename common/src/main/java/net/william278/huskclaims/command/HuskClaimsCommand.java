@@ -147,6 +147,7 @@ public class HuskClaimsCommand extends Command implements TabCompletable {
                     plugin.loadSettings();
                     plugin.loadTrustLevels();
                     plugin.loadClaimShopMenuConfig();
+                    plugin.loadClaimFlagsMenuConfig();
                     plugin.loadHooks(PluginHook.Register.ON_ENABLE);
                     plugin.registerHooks(PluginHook.Register.ON_ENABLE);
                     plugin.getLocales().getLocale("reload_complete").ifPresent(executor::sendMessage);

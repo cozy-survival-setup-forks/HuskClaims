@@ -152,6 +152,36 @@ public interface ConfigProvider {
         ));
     }
 
+    /**
+     * Get the claim settings menu config
+     *
+     * @return the claim settings menu config
+     * @since 1.5.11
+     */
+    @NotNull
+    ClaimFlagsMenuConfig getClaimFlagsMenuConfig();
+
+    /**
+     * Set the claim settings menu config
+     *
+     * @param config The config to set
+     * @since 1.5.11
+     */
+    void setClaimFlagsMenuConfig(@NotNull ClaimFlagsMenuConfig config);
+
+    /**
+     * Load the claim settings menu config from file
+     *
+     * @since 1.5.11
+     */
+    default void loadClaimFlagsMenuConfig() {
+        setClaimFlagsMenuConfig(YamlConfigurations.update(
+                getConfigDirectory().resolve("claim_flags_menu.yml"),
+                ClaimFlagsMenuConfig.class,
+                YAML_CONFIGURATION_PROPERTIES.header(ClaimFlagsMenuConfig.CONFIG_HEADER).build()
+        ));
+    }
+
     @NotNull
     String getServerName();
 

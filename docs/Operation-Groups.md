@@ -18,7 +18,12 @@ By default, HuskClaims provides the operation groups below. Each one has a toggl
 
 "Default" follows the `default_flags` list in the config. These groups are only written to `config.yml` when it is created; an existing config keeps the groups it already has, so copy the entries below into `operation_groups` to get the new ones.
 
-An example DeluxeMenus settings menu that uses these commands and placeholders is in [`examples/claimflags-menu.yml`](https://github.com/cozy-survival-setup-forks/HuskClaims/blob/master/examples/claimflags-menu.yml).
+## Claim settings menu
+`/claimsettings` (alias `/claimoptions`) opens a menu for the claim the player is standing in, with one item per operation group that shows whether it is on. Clicking an item runs the group's own toggle command, so the trust privilege check and the messages are the same as typing the command. Standing outside a claim shows a "no claim" item instead.
+
+The menu is `plugins/HuskClaims/claim_flags_menu.yml`, written on first start and reloaded with `/huskclaims reload`. Every entry in `flags` is one operation group, by its `id` from `operation_groups`: add an entry to show a group of your own, remove one to hide it, and change its slot, materials, names and lore freely. `enabled` is the item shown while the group is on in the claim, `disabled` the item shown while it is off. The title, rows, filler material and the info, no-claim and close items are set the same way. Names and lore take MiniMessage and `&` codes, and `%group_name%` and `%group_description%` in them are filled in from the group.
+
+A DeluxeMenus version that uses the toggle commands and placeholders is in [`examples/claimflags-menu.yml`](https://github.com/cozy-survival-setup-forks/HuskClaims/blob/master/examples/claimflags-menu.yml).
 
 ## Wilderness Redstone Restrictions
 HuskClaims includes a `redstone_actuate` operation type that controls whether redstone mechanisms (pistons, dispensers, etc.) can function. This provides similar functionality to GriefPrevention's redstone restrictions and is **enabled by default** in wilderness areas.

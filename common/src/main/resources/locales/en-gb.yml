@@ -239,6 +239,7 @@ locales:
   adminclaim_command_description: 'Create an admin claim, or toggle admin claiming mode.'
   huskclaims_command_description: 'View plugin information & reload configs.'
   claimflags_command_description: 'Manage flags for the claim or world you''re in.'
+  claimsettings_command_description: 'Open the settings menu of the claim you are standing in.'
   buyclaimblocks_command_description: 'Purchase additional claim blocks.'
   ignoreclaims_command_description: 'Toggle ignoring player claims.'
   signspy_command_description: 'Toggle sign moderation notifications.'
