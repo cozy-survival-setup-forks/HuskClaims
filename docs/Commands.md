@@ -248,10 +248,10 @@ This is a table of HuskClaims commands, how to use them, their required permissi
         <!-- /claimflags command -->
         <tr>
             <td rowspan="3"><code>/claimflags</code></td>
-            <td rowspan="3"><code>/claimflags &lt;list|set&gt;</code></td>
-            <td>Manage the flags of the claim you are in</td>
+            <td rowspan="3"><code>/claimflags [set]</code></td>
+            <td>Open the flags menu of the claim you are in, or set a single flag</td>
             <td><code>huskclaims.command.claimflags</code></td>
-            <td align="center">❌</td>
+            <td align="center">✅</td>
         </tr>
         <tr>
             <td>Manage the flags of someone else's claim</td>

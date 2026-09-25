@@ -107,7 +107,6 @@ public interface CommandProvider {
         commands.add(new ClaimBlocksCommand(getPlugin()));
         commands.add(new RestrictClaimCommand(getPlugin()));
         commands.add(new IgnoreClaimsCommand(getPlugin()));
-        commands.add(new ClaimSettingsCommand(getPlugin()));
 
         // Register sign spying
         if (getPlugin().getSettings().getModeration().getSigns().isNotifyModerators()) {

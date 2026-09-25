@@ -1,8 +1,7 @@
 # DeluxeMenus claim settings menu. Needs PlaceholderAPI. Put it in DeluxeMenus/gui_menus and register it in config.yml.
 # Each toggle uses one operation group: its command and its %huskclaims_group_<id>% placeholder.
 open_command:
-  - claimsettings
-  - claimflags
+  - claimmenu
 register_command: true
 size: 45
 menu_title: '&0| Claims - Settings'

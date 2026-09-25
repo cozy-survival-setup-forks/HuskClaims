@@ -31,7 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Config for the /claimsettings menu, where claim managers switch operation groups on and off.
+ * Config for the /claimflags menu, where claim managers switch operation groups on and off.
  *
  * @since 1.5.11
  */
@@ -46,7 +46,7 @@ public class ClaimFlagsMenuConfig {
             ┃ HuskClaims - Claim Settings Menu ┃
             ┃      Developed by William278     ┃
             ┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-            ┣╸ Customise the /claimsettings menu, where players switch operation groups on and off
+            ┣╸ Customise the /claimflags menu, where players switch operation groups on and off
             ┣╸ Supports MiniMessage (https://docs.advntr.dev/minimessage/format.html)
             ┣╸ and legacy codes, including &#RRGGBB hex codes and &a / &l style codes
             ┣╸ Slots count across each row, 0 is the top left corner

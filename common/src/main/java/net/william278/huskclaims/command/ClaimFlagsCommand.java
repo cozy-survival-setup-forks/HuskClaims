@@ -27,7 +27,6 @@ import net.william278.huskclaims.claim.ClaimWorld;
 import net.william278.huskclaims.trust.TrustLevel;
 import net.william278.huskclaims.user.CommandUser;
 import net.william278.huskclaims.user.OnlineUser;
-import net.william278.paginedown.PaginatedList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -37,13 +36,11 @@ public class ClaimFlagsCommand extends OnlineUserCommand implements TabCompletab
 
     public static final String FLAG_PERMISSION = "huskclaims.flag";
 
-    private final int CLAIM_FLAGS_PER_PAGE = 8;
     private final TrustLevel.Privilege MANAGE_FLAGS = TrustLevel.Privilege.MANAGE_OPERATION_GROUPS;
 
     public ClaimFlagsCommand(@NotNull HuskClaims plugin) {
-        super(List.of("claimflags"), "[set|list]", plugin);
+        super(List.of("claimflags"), "[set]", plugin);
 
-        this.setOperatorCommand(true);
         this.addAdditionalPermissions(Map.of(
                 "other", true,
                 "world", true
@@ -52,8 +49,12 @@ public class ClaimFlagsCommand extends OnlineUserCommand implements TabCompletab
 
     @Override
     public void execute(@NotNull OnlineUser executor, @NotNull String[] args) {
-        final String action = parseStringArg(args, 0).orElse("list");
-        this.handleFlagsCommand(executor, action, removeFirstArg(args));
+        if (parseStringArg(args, 0).map(a -> a.equalsIgnoreCase("set")).orElse(false)) {
+            this.handleFlagsCommand(executor, removeFirstArg(args));
+        } else if (!plugin.openClaimSettings(executor)) {
+            plugin.getLocales().getLocale("error_invalid_syntax", getUsage())
+                    .ifPresent(executor::sendMessage);
+        }
     }
 
     @Override
@@ -61,7 +62,7 @@ public class ClaimFlagsCommand extends OnlineUserCommand implements TabCompletab
     public List<String> suggest(@NotNull CommandUser user, @NotNull String[] args) {
         final boolean setting = parseStringArg(args, 0).map(a -> a.equals("set")).orElse(false);
         return switch (args.length) {
-            case 0, 1 -> Lists.newArrayList("set", "list");
+            case 0, 1 -> Lists.newArrayList("set");
             case 2 -> setting ? plugin.getOperationListener().getRegisteredOperationTypes().stream()
                     .filter(op -> canManageFlag(user, op))
                     .map(OperationType::asMinimalString).toList() : null;
@@ -70,7 +71,7 @@ public class ClaimFlagsCommand extends OnlineUserCommand implements TabCompletab
         };
     }
 
-    private void handleFlagsCommand(@NotNull OnlineUser executor, @NotNull String action, @NotNull String[] args) {
+    private void handleFlagsCommand(@NotNull OnlineUser executor, @NotNull String[] args) {
         final Optional<ClaimWorld> optionalWorld = plugin.getClaimWorld(executor.getWorld());
         if (optionalWorld.isEmpty()) {
             plugin.getLocales().getLocale("world_not_claimable")
@@ -87,10 +88,7 @@ public class ClaimFlagsCommand extends OnlineUserCommand implements TabCompletab
             return;
         }
 
-        switch (action.toLowerCase(Locale.ENGLISH)) {
-            case "set" -> this.handleSetClaimFlag(executor, claim, world, args);
-            case "list" -> this.sendClaimFlagsList(executor, claim, world, parseIntArg(args, 0).orElse(1));
-        }
+        this.handleSetClaimFlag(executor, claim, world, args);
     }
 
     private void handleSetClaimFlag(@NotNull OnlineUser onlineUser, @Nullable Claim claim,
@@ -122,47 +120,8 @@ public class ClaimFlagsCommand extends OnlineUserCommand implements TabCompletab
         }
         plugin.getDatabase().updateClaimWorld(world);
 
-        // Send flag list on correct page to indicate the update
-        final double changedIndex = plugin.getOperationListener()
-                .getRegisteredOperationTypes().stream()
-                    .filter(op -> canManageFlag(onlineUser, op)).toList().indexOf(type);
-        final int changedPage = (int) Math.ceil(changedIndex / CLAIM_FLAGS_PER_PAGE);
-        this.sendClaimFlagsList(onlineUser, claim, world, changedPage);
-    }
-
-    private void sendClaimFlagsList(@NotNull OnlineUser onlineUser, @Nullable Claim claim,
-                                    @NotNull ClaimWorld world, int page) {
-        List<String> flags = plugin.getOperationListener().getRegisteredOperationTypes().stream()
-            .filter(op -> canManageFlag(onlineUser, op))
-            .map(op -> plugin.getLocales().getRawLocale("claim_flag_%s"
-                    .formatted((claim == null ? world.getWildernessFlags() : claim.getDefaultFlags())
-                        .contains(op) ? "enabled" : "disabled"),
-                op.asMinimalString()
-            ).orElse(op.asMinimalString())).toList();
-        if (flags.isEmpty()) {
-            plugin.getLocales().getLocale("error_no_flags")
-                .ifPresent(onlineUser::sendMessage);
-            return;
-        }
-
-        final String header;
-        if (claim != null) {
-            header = plugin.getLocales().getRawLocale("claim_flags_header", claim.getOwnerName(world, plugin))
-                    .orElse(claim.getOwnerName(world, plugin));
-        } else {
-            header = plugin.getLocales().getRawLocale("claim_flags_wilderness_header", world.getName(plugin))
-                    .orElse(world.getName(plugin));
-        }
-
-        onlineUser.sendMessage(
-                PaginatedList.of(
-                        flags,
-                        plugin.getLocales().getBaseList(CLAIM_FLAGS_PER_PAGE)
-                                .setCommand("/%s list".formatted(getName()))
-                                .setHeaderFormat(header).setItemSeparator("\n")
-                                .build()
-                ).getNearestValidPage(page)
-        );
+        plugin.getLocales().getLocale("claim_flag_%s".formatted(value ? "enabled" : "disabled"),
+                type.asMinimalString()).ifPresent(onlineUser::sendMessage);
     }
 
     // Check that the user has permission to modify flags in this claim

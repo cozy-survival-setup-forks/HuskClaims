@@ -39,7 +39,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * The /claimsettings menu: one item per operation group, showing whether it is on in the claim the player is
+ * The /claimflags menu: one item per operation group, showing whether it is on in the claim the player is
  * standing in. A click runs the group's own toggle command, so trust privileges and messages work as usual.
  */
 public final class ClaimFlagsMenu {

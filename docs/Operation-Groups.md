@@ -18,8 +18,8 @@ By default, HuskClaims provides the operation groups below. Each one has a toggl
 
 "Default" follows the `default_flags` list in the config. These groups are only written to `config.yml` when it is created; an existing config keeps the groups it already has, so copy the entries below into `operation_groups` to get the new ones.
 
-## Claim settings menu
-`/claimsettings` (alias `/claimoptions`) opens a menu for the claim the player is standing in, with one item per operation group that shows whether it is on. Clicking an item runs the group's own toggle command, so the trust privilege check and the messages are the same as typing the command. Standing outside a claim shows a "no claim" item instead.
+## Claim flags menu
+`/claimflags` opens a menu for the claim the player is standing in, with one item per operation group that shows whether it is on. Clicking an item runs the group's own toggle command, so the trust privilege check and the messages are the same as typing the command. Standing outside a claim shows a "no claim" item instead.
 
 The menu is `plugins/HuskClaims/claim_flags_menu.yml`, written on first start and reloaded with `/huskclaims reload`. Every entry in `flags` is one operation group, by its `id` from `operation_groups`: add an entry to show a group of your own, remove one to hide it, and change its slot, materials, names and lore freely. `enabled` is the item shown while the group is on in the claim, `disabled` the item shown while it is off. The title, rows, filler material and the info, no-claim and close items are set the same way. Names and lore take MiniMessage and `&` codes, and `%group_name%` and `%group_description%` in them are filled in from the group.
 
@@ -107,13 +107,13 @@ operation_groups:
 Whether an Operation Group is the default in a claim depends on whether the `allowed_operations` of the group are also present in the `default_flags` list in the config.
 
 ## Fine-Grained Flag Management
-> **Note:** This is a powerful command, only accessible to operators by default. Be careful granting player access to this command!
+> **Note:** `/claimflags set` changes single operation types and needs the matching `huskclaims.flag.<type>` permission, which only operators have by default.
 
 The `/claimflags` command allows you to fine-tune the allowed operation group settings within a claim. This is a powerful command, and can cause users confusion if they accidentally mess with the wrong flags. We therefore recommend creating operation group commands for end-user needs, and restricting this command for moderator actions.
 
-Use `/claimflags list` to bring up a list of enabled operation types in the claim you are standing in. This command requires the user to have the `MANAGE_OPERATION_GROUPS` privilege in the claim they are stood in, or the `huskclaims.command.claimflags.other` bypass permission.
+`/claimflags` opens the flags menu below. `/claimflags set` requires the user to have the `MANAGE_OPERATION_GROUPS` privilege in the claim they are stood in, or the `huskclaims.command.claimflags.other` bypass permission.
 
-Click on the listed flags to toggle their allow-state on or off, or use `/claimflags set [operation_type] <true/false>`.
+Use `/claimflags set [operation_type] <true/false>` to change one operation type.
 
 ### Adjusting the flags outside of claims
-You can also can adjust the value of flags outside of claims (the "Wilderness") by using `/claimflags` while standing outside a claim. This requires the `huskclaims.command.claimflags.world` permission.
+You can also can adjust the value of flags outside of claims (the "Wilderness") by using `/claimflags set` while standing outside a claim. This requires the `huskclaims.command.claimflags.world` permission.
