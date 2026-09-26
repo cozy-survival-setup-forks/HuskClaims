@@ -252,6 +252,12 @@ public final class Settings {
         @Comment("Max range of inspector tools")
         private int inspectionDistance = 64;
 
+        @Comment("How far around them /claimborders shows the claim borders to a player, in blocks")
+        private int borderViewDistance = 32;
+
+        @Comment("How often /claimborders looks for changes as the player moves, in seconds")
+        private int borderViewRefreshSeconds = 2;
+
         @Comment("Whether to allow inspecting nearby claims by sneaking when using the inspection tool")
         private boolean allowNearbyClaimInspection = true;
 

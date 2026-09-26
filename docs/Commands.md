@@ -387,6 +387,21 @@ This is a table of HuskClaims commands, how to use them, their required permissi
             <td><code>huskclaims.command.trapped</code></td>
             <td align="center">✅</td>
         </tr>
+        <!-- /claimborders command -->
+        <tr><th colspan="5">Claim borders command</th></tr>
+        <tr><td colspan="5" align="center">See the claims around you without holding the inspection tool.</td></tr>
+        <tr>
+            <td rowspan="2"><code>/claimborders</code></td>
+            <td><code>/claimborders</code></td>
+            <td>Toggle showing the borders of the claims around you (32 blocks by default, `claims.border_view_distance`). They follow you as you walk.</td>
+            <td rowspan="2"><code>huskclaims.command.claimborders</code></td>
+            <td align="center">✅</td>
+        </tr>
+        <tr>
+            <td><code>/claimborders [on|off]</code></td>
+            <td>Turn it on or off explicitly.</td>
+            <td align="center">✅</td>
+        </tr>
         <tr><th colspan="5">Other administrator commands</th></tr>
         <tr><td colspan="5" align="center">Moderation and plugin management utilities.</td></tr>
         <tr>
