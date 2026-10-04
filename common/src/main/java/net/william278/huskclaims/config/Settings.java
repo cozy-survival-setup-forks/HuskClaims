@@ -336,7 +336,15 @@ public final class Settings {
     }
 
     @Comment("Groups of operations that can be toggled on/off in claims")
-    public List<OperationGroup> operationGroups = List.of(
+    public List<OperationGroup> operationGroups = defaultOperationGroups();
+
+    /**
+     * The groups a new config.yml is written with. An older config.yml keeps the groups it was written with,
+     * so the /claimflags menu falls back to these for menu entries that config.yml does not define.
+     */
+    @NotNull
+    public static List<OperationGroup> defaultOperationGroups() {
+        return List.of(
             group("explosions", "Claim Explosions", "Toggle whether explosions can damage terrain in claims",
                     "claimexplosions", OperationType.EXPLOSION_DAMAGE_TERRAIN, OperationType.MONSTER_DAMAGE_TERRAIN),
             group("pvp", "Claim PvP", "Toggle whether players can fight each other in claims",
@@ -353,7 +361,8 @@ public final class Settings {
                     "claimraids", OperationType.START_RAID),
             group("spawn_eggs", "Spawn Eggs", "Toggle whether spawn eggs can be used in claims",
                     "claimeggs", OperationType.USE_SPAWN_EGG)
-    );
+        );
+    }
 
     private static OperationGroup group(String id, String name, String description, String command,
                                         OperationType... operations) {

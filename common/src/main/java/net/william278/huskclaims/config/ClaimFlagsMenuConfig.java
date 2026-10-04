@@ -102,7 +102,14 @@ public class ClaimFlagsMenuConfig {
 
     private int closeSlot = 40;
 
-    private List<FlagItem> flags = Lists.newArrayList(
+    private List<FlagItem> flags = defaultFlags();
+
+    /**
+     * The menu items a new claim_flags_menu.yml is written with. An older file keeps the items it was written with,
+     * so the menu falls back to these for groups the file has no entry for.
+     */
+    public static List<FlagItem> defaultFlags() {
+        return Lists.newArrayList(
             flag("explosions", 10, "TNT", "TNT", "CLAIM EXPLOSIONS",
                     "<white>Allow <#FFE05A>explosions <white>to damage", "<white>terrain inside this claim."),
             flag("pvp", 11, "DIAMOND_SWORD", "WOODEN_SWORD", "CLAIM PVP",
@@ -119,9 +126,10 @@ public class ClaimFlagsMenuConfig {
                     "<white>Allow <#FFE05A>raids <white>to start", "<white>inside the borders of this claim."),
             flag("spawn_eggs", 22, "CREEPER_SPAWN_EGG", "CREEPER_SPAWN_EGG", "SPAWN EGGS",
                     "<white>Allow <#FF7490>spawn eggs <white>to be", "<white>used inside this claim.")
-    );
+        );
+    }
 
-    private static FlagItem flag(String group, int slot, String enabledMaterial, String disabledMaterial, String name,
+    public static FlagItem flag(String group, int slot, String enabledMaterial, String disabledMaterial, String name,
                                  String... description) {
         final List<String> enabledLore = new ArrayList<>(List.of("<#B6C1C8>Claims", "", "<#FF9558>Description:"));
         enabledLore.addAll(List.of(description));
