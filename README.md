@@ -29,8 +29,7 @@
 
 This fork is maintained for **Cozy Survival Setup** and targets Paper/Leaf 1.21.11. It includes:
 
-- a redesigned 45-slot claim-block shop opened with `/claimshop`, `/claimblockshop`, `/buyclaimblock`, or `/buyclaimblocks`;
-- left-click, right-click, and shift-click quantity controls plus custom chat input;
+- a claim-block shop opened with `/claimshop`, `/claimblockshop`, `/buyclaimblock`, or `/buyclaimblocks`, with add and remove buttons for 100, 500 and 1000 blocks, a custom amount typed in chat, an order summary, and confirm and cancel buttons (every item is set in `claim_shop_menu.yml`);
 - claim protections for armor stands, pressure plates, dragon eggs, campfires, and wind-charge buttons;
 - a separate `huskclaims.bypass.private` permission for private claims;
 - support for `/modifyclaimblocks add|remove <player> <amount>`; and

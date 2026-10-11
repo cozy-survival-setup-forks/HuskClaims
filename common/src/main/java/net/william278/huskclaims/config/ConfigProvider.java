@@ -28,10 +28,12 @@ import net.william278.huskclaims.HuskClaims;
 import net.william278.huskclaims.trust.TrustLevel;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -145,11 +147,29 @@ public interface ConfigProvider {
      * @since 1.5.11
      */
     default void loadClaimShopMenuConfig() {
+        final Path file = getConfigDirectory().resolve("claim_shop_menu.yml");
+        keepOldClaimShopLayout(file);
         setClaimShopMenuConfig(YamlConfigurations.update(
-                getConfigDirectory().resolve("claim_shop_menu.yml"),
+                file,
                 ClaimShopMenuConfig.class,
                 YAML_CONFIGURATION_PROPERTIES.header(ClaimShopMenuConfig.CONFIG_HEADER).build()
         ));
+    }
+
+    // a file from before the current layout would keep the old buttons for good, so it is moved aside once
+    private static void keepOldClaimShopLayout(@NotNull Path file) {
+        try {
+            if (!Files.isRegularFile(file)) {
+                return;
+            }
+            final String marker = "layout_version: " + ClaimShopMenuConfig.LAYOUT_VERSION;
+            final boolean current = Files.readAllLines(file).stream().anyMatch(line -> line.strip().equals(marker));
+            if (!current) {
+                Files.move(file, file.resolveSibling(file.getFileName() + ".old"), StandardCopyOption.REPLACE_EXISTING);
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException("Could not replace the old claim shop menu file " + file, e);
+        }
     }
 
     /**

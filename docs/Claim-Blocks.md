@@ -33,7 +33,7 @@ maximum_claim_blocks: 9999999
 This value can additionally be overridden by granting the `huskclaims.max_claim_blocks.(amount)` [permission](permissions) node to a user/group, where `(amount)` is the maximum number of blocks a player can have. Note this permission node does not stack; the value of the highest effective permission will be taken.
 
 ## Buying Claim Blocks
-If the Vault ("economy") hook is enabled, and you have an economy plugin installed, players can open the shop with `/claimshop` (also `/claimblockshop`, `/buyclaimblock`, or `/buyclaimblocks`). Supplying an amount directly, such as `/buyclaimblocks 250`, skips the menu. The price is set in the config file and defaults to `25.0` currency per block in this fork:
+If the Vault ("economy") hook is enabled, and you have an economy plugin installed, players can open the shop with `/claimshop` (also `/claimblockshop`, `/buyclaimblock`, or `/buyclaimblocks`). The menu has add and remove buttons for 100, 500 and 1000 blocks, a custom amount typed in chat, a summary of the quantity and total cost, and confirm and cancel buttons; every item, its slot and its text can be changed in `claim_shop_menu.yml`. Supplying an amount directly, such as `/buyclaimblocks 250`, skips the menu. The price is set in the config file and defaults to `25.0` currency per block in this fork:
 
 <details>
 <summary>Economy Hook (config.yml)</summary>

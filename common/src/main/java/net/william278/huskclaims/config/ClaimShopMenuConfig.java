@@ -40,6 +40,12 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ClaimShopMenuConfig {
 
+    /**
+     * Bumped when the default layout changes; a file written by an older layout is kept as claim_shop_menu.yml.old
+     * and replaced by the defaults.
+     */
+    public static final int LAYOUT_VERSION = 2;
+
     protected static final String CONFIG_HEADER = """
             ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
             ┃ HuskClaims - Claim Shop Menu ┃
@@ -50,129 +56,100 @@ public class ClaimShopMenuConfig {
             ┣╸ and legacy codes, including &#RRGGBB hex codes and &a / &l style codes
             ┣╸ Every item has a slot (0 is the top left corner, counting across each row)
             ┣╸ Empty slots are filled with filler_material; set it to AIR to leave them empty
-            ┣╸ Bundle placeholders: %amount%, %amount_x10%
+            ┣╸ Bundles change the selected amount by their amount when clicked; a negative amount removes
+            ┣╸ Bundle placeholders: %amount% (the size of the change, without the sign)
             ┗╸ Info item placeholders: %quantity%, %unit_price%, %total_cost%
             """;
 
-    private String title = "<black>| Claim Block Shop";
+    private int layoutVersion = LAYOUT_VERSION;
 
-    private int rows = 6;
+    private String title = "&0| Claim Blocks Shop";
+
+    private int rows = 4;
 
     private String fillerMaterial = "BLACK_STAINED_GLASS_PANE";
 
     private List<BundleItem> bundles = Lists.newArrayList(
-            BundleItem.builder()
-                    .material("PRISMARINE_CRYSTALS")
-                    .slot(11)
-                    .name("<b><#66D9E8>SMALL BUNDLE")
-                    .amount(100)
-                    .lore(List.of(
-                            "<gray>Claim Block Shop",
-                            "",
-                            "<white>A quick top-up of <#66D9E8>claim blocks<white>.",
-                            "",
-                            "<#EBCB8B>▶ <b><u>LEFT CLICK</u></b> to add %amount%",
-                            "<#EBCB8B>▶ <b><u>RIGHT CLICK</u></b> to remove %amount%",
-                            "<#EBCB8B>▶ <b><u>SHIFT CLICK</u></b> to change by %amount_x10%"
-                    ))
-                    .build(),
-            BundleItem.builder()
-                    .material("SUNFLOWER")
-                    .slot(13)
-                    .name("<b><#FFD166>MEDIUM BUNDLE")
-                    .amount(500)
-                    .lore(List.of(
-                            "<gray>Claim Block Shop",
-                            "",
-                            "<white>A solid stack of <#FFD166>claim blocks<white>.",
-                            "",
-                            "<#EBCB8B>▶ <b><u>LEFT CLICK</u></b> to add %amount%",
-                            "<#EBCB8B>▶ <b><u>RIGHT CLICK</u></b> to remove %amount%",
-                            "<#EBCB8B>▶ <b><u>SHIFT CLICK</u></b> to change by %amount_x10%"
-                    ))
-                    .build(),
-            BundleItem.builder()
-                    .material("AMETHYST_SHARD")
-                    .slot(15)
-                    .name("<b><#C8A6FF>LARGE BUNDLE")
-                    .amount(1000)
-                    .lore(List.of(
-                            "<gray>Claim Block Shop",
-                            "",
-                            "<white>Go big with <#C8A6FF>a thousand<white> blocks.",
-                            "",
-                            "<#EBCB8B>▶ <b><u>LEFT CLICK</u></b> to add %amount%",
-                            "<#EBCB8B>▶ <b><u>RIGHT CLICK</u></b> to remove %amount%",
-                            "<#EBCB8B>▶ <b><u>SHIFT CLICK</u></b> to change by %amount_x10%"
-                    ))
-                    .build()
+            bundle("RED_STAINED_GLASS_PANE", 9, "&#EF305F&lREMOVE 1000", -1000),
+            bundle("RED_STAINED_GLASS_PANE", 10, "&#EF305F&lREMOVE 500", -500),
+            bundle("RED_STAINED_GLASS_PANE", 11, "&#EF305F&lREMOVE 100", -100),
+            bundle("LIME_STAINED_GLASS_PANE", 15, "&#63F68B&lADD 100", 100),
+            bundle("LIME_STAINED_GLASS_PANE", 16, "&#63F68B&lADD 500", 500),
+            bundle("LIME_STAINED_GLASS_PANE", 17, "&#63F68B&lADD 1000", 1000)
     );
 
     private ItemDef infoItem = ItemDef.builder()
-            .material("NETHER_STAR")
-            .slot(22)
-            .name("<b><#C8A6FF>ORDER SUMMARY")
+            .material("GOLDEN_SHOVEL")
+            .slot(13)
+            .name("&#FF6C00&lCLAIM BLOCKS")
             .lore(List.of(
-                    "<gray>Claim Block Shop",
+                    "&#9FA3B8Claim Block Shop",
                     "",
-                    "<#66D9E8>Quantity <dark_gray>→ <white>%quantity%",
-                    "<#FFD166>Unit Price <dark_gray>→ <white>%unit_price%",
-                    "<#8BF0A6>Total Cost <dark_gray>→ <white>%total_cost%"
-            ))
-            .build();
-
-    private ItemDef resetItem = ItemDef.builder()
-            .material("RECOVERY_COMPASS")
-            .slot(29)
-            .name("<b><#FF6B7A>RESET")
-            .lore(List.of(
-                    "<gray>Claim Block Shop",
-                    "",
-                    "<white>Put the <#66D9E8>selection <white>back to",
-                    "<white>its <#8BF0A6>default <white>amount.",
-                    "",
-                    "<#EBCB8B>▶ <b><u>CLICK</u></b> to reset"
+                    "&#FAE156Description:",
+                    "&#FD6DEE⚑ &fQuantity: &#FD6DEE%quantity%",
+                    "&#63EAF6☄ &fUnit Price: &#63EAF6%unit_price%",
+                    "&#63F68B&l$ &fTotal Cost: &#63F68B%total_cost%"
             ))
             .build();
 
     private ItemDef customAmountItem = ItemDef.builder()
-            .material("WRITABLE_BOOK")
+            .material("YELLOW_STAINED_GLASS_PANE")
             .slot(31)
-            .name("<b><#FFD166>CUSTOM AMOUNT")
+            .name("&#FAE156&lCUSTOM AMOUNT")
             .lore(List.of(
-                    "<gray>Claim Block Shop",
+                    "&#9FA3B8Claim Block Shop",
                     "",
-                    "<white>Type a <#66D9E8>custom <white>amount of",
-                    "<#8BF0A6>claim blocks <white>in chat.",
+                    "&#FAE156Description:",
+                    "&fType a &#63F68Bcustom &fnumber",
+                    "&fof claim &#FAE156blocks &fto &#EF305Fbuy.",
                     "",
-                    "<#EBCB8B>▶ <b><u>CLICK</u></b> to enter an amount"
+                    "&#FAE156▶ &l&nCLICK&#FAE156 to Continue"
+            ))
+            .build();
+
+    private ItemDef cancelItem = ItemDef.builder()
+            .material("RED_SHULKER_BOX")
+            .slot(30)
+            .name("&#ff0000&lCANCEL")
+            .lore(List.of(
+                    "&#9FA3B8Claim Block Shop",
+                    "",
+                    "&#FAE156Description:",
+                    "&fClick &#63F68Bhere &fto go &#FAE156back",
+                    "&fto the &#EF305Fmain menu",
+                    "",
+                    "&#FAE156▶ &l&nCLICK&#FAE156 to Return"
             ))
             .build();
 
     private ItemDef confirmItem = ItemDef.builder()
-            .material("LIME_CONCRETE")
-            .slot(33)
-            .name("<b><#8BF0A6>CONFIRM PURCHASE")
+            .material("LIME_SHULKER_BOX")
+            .slot(32)
+            .name("&a&lCONFIRM")
             .lore(List.of(
-                    "<gray>Claim Block Shop",
+                    "&#9FA3B8Claim Block Shop",
                     "",
-                    "<white>Buy the <#66D9E8>selected <white>amount for",
-                    "<white>the <#FF6B7A>total <white>shown above.",
+                    "&#FAE156Description:",
+                    "&fClick &#63F68Bhere &fto &#FAE156buy",
+                    "&fthe &#EF305Fitem!",
                     "",
-                    "<#EBCB8B>▶ <b><u>CLICK</u></b> to buy"
+                    "&#FAE156▶ &l&nCLICK&#FAE156 to Buy"
             ))
             .build();
 
-    private ItemDef closeItem = ItemDef.builder()
-            .material("BARRIER")
-            .slot(49)
-            .name("<b><#FF6B7A>CLOSE")
-            .lore(List.of(
-                    "<gray>Claim Block Shop",
-                    "",
-                    "<#EBCB8B>▶ <b><u>CLICK</u></b> to close"
-            ))
-            .build();
+    private static BundleItem bundle(String material, int slot, String name, long amount) {
+        return BundleItem.builder()
+                .material(material)
+                .slot(slot)
+                .name(name)
+                .amount(amount)
+                .lore(List.of(
+                        "&#9FA3B8Claim Block Shop",
+                        "",
+                        "&#FAE156▶ &l&nCLICK&#FAE156 to Continue"
+                ))
+                .build();
+    }
 
     @Getter
     @Builder

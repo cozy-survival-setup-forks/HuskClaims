@@ -19,11 +19,13 @@
 
 package net.william278.huskclaims.menu;
 
+import de.themoep.minedown.adventure.MineDown;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.title.Title;
 import net.william278.huskclaims.PaperHuskClaims;
 import net.william278.huskclaims.config.ClaimShopMenuConfig;
 import net.william278.huskclaims.hook.EconomyHook;
@@ -38,6 +40,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -48,13 +51,12 @@ import java.util.regex.Pattern;
 
 public final class ClaimShopMenu {
 
-    private static final int DEFAULT_AMOUNT = 100;
-    private static final int[] BUNDLE_SLOTS = {11, 13, 15};
-    private static final int RESET_SLOT = 29;
+    private static final long DEFAULT_AMOUNT = 1L;
+    private static final int INFO_SLOT = 13;
+    private static final int CANCEL_SLOT = 30;
     private static final int CUSTOM_AMOUNT_SLOT = 31;
-    private static final int CONFIRM_SLOT = 33;
-    private static final int INFO_SLOT = 22;
-    private static final int CLOSE_SLOT = 49;
+    private static final int CONFIRM_SLOT = 32;
+    private static final int INPUT_SECONDS = 30;
     private static final Map<UUID, ClaimShopMenu> ACTIVE_INPUTS = new ConcurrentHashMap<>();
     private static final Pattern LEGACY_CODE = Pattern.compile("[&§]x((?:[&§][0-9a-fA-F]){6})|[&§]#([0-9a-fA-F]{6})|[&§]([0-9a-fA-Fk-orK-OR])");
     private static final Pattern SECTION_CODES = Pattern.compile("\u00a7x(?:\u00a7[0-9a-fA-F]){6}|\u00a7[0-9a-fA-Fk-orK-OR]");
@@ -95,49 +97,32 @@ public final class ClaimShopMenu {
     }
 
     private void handleClick(@NotNull InventoryClickEvent event) {
-        if (event.getRawSlot() < 0 || event.getRawSlot() >= size) {
-            return;
-        }
-
-        final long multiplier = event.isShiftClick() ? 10L : 1L;
-        final long bundle = bundleAmountAt(event.getRawSlot());
-        if (bundle > 0) {
-            final long change = Math.multiplyExact(bundle, multiplier);
-            selectedAmount = event.isRightClick()
-                    ? Math.max(1, selectedAmount - change)
-                    : Math.min(SavedUser.MAX_CLAIM_BLOCKS, selectedAmount + change);
-            draw();
-            return;
-        }
-
         final int slot = event.getRawSlot();
-        if (slot == slotOf(config.getResetItem(), RESET_SLOT)) {
-            selectedAmount = DEFAULT_AMOUNT;
+        if (slot < 0 || slot >= size) {
+            return;
+        }
+
+        final Long change = bundleChangeAt(slot);
+        if (change != null) {
+            selectedAmount = Math.max(1L, Math.min(SavedUser.MAX_CLAIM_BLOCKS, selectedAmount + change));
             draw();
         } else if (slot == slotOf(config.getCustomAmountItem(), CUSTOM_AMOUNT_SLOT)) {
             beginCustomInput();
         } else if (slot == slotOf(config.getConfirmItem(), CONFIRM_SLOT)) {
             confirmPurchase();
-        } else if (slot == slotOf(config.getCloseItem(), CLOSE_SLOT)) {
+        } else if (slot == slotOf(config.getCancelItem(), CANCEL_SLOT)) {
             player.closeInventory();
         }
     }
 
-    private long bundleAmountAt(int slot) {
-        final List<ClaimShopMenuConfig.BundleItem> bundles = config.getBundles();
-        for (int i = 0; i < bundles.size(); i++) {
-            if (bundleSlot(bundles.get(i), i) == slot) {
-                return bundles.get(i).getAmount();
+    // the change a bundle makes, kept inside what a single click can sensibly move
+    private Long bundleChangeAt(int slot) {
+        for (ClaimShopMenuConfig.BundleItem bundle : config.getBundles()) {
+            if (bundle.getSlot() == slot) {
+                return Math.max(-SavedUser.MAX_CLAIM_BLOCKS, Math.min(SavedUser.MAX_CLAIM_BLOCKS, bundle.getAmount()));
             }
         }
-        return 0L;
-    }
-
-    private static int bundleSlot(@NotNull ClaimShopMenuConfig.BundleItem bundle, int index) {
-        if (bundle.getSlot() >= 0) {
-            return bundle.getSlot();
-        }
-        return index < BUNDLE_SLOTS.length ? BUNDLE_SLOTS[index] : -1;
+        return null;
     }
 
     private static int slotOf(@NotNull ClaimShopMenuConfig.ItemDef def, int fallback) {
@@ -145,23 +130,31 @@ public final class ClaimShopMenu {
     }
 
     public void acceptInput(@NotNull String input) {
-        if (input.equalsIgnoreCase("cancel")) {
+        if (input.strip().equalsIgnoreCase("cancel")) {
             ACTIVE_INPUTS.remove(player.getUniqueId(), this);
+            player.clearTitle();
             locale("claim_shop_input_cancelled");
             return;
         }
+
+        final long amount;
         try {
-            final long amount = Long.parseLong(input.trim());
-            if (amount < 1 || amount > SavedUser.MAX_CLAIM_BLOCKS) {
-                throw new NumberFormatException("Out of range");
-            }
-            selectedAmount = amount;
-            ACTIVE_INPUTS.remove(player.getUniqueId(), this);
-            draw();
-            open();
+            // "1,000" and "1 000" are fine, "1k" is not
+            amount = Long.parseLong(input.replaceAll("[,_\\s]", ""));
         } catch (NumberFormatException e) {
             locale("claim_shop_input_invalid");
+            return;
         }
+        if (amount < 1 || amount > SavedUser.MAX_CLAIM_BLOCKS) {
+            locale("claim_shop_input_amount");
+            return;
+        }
+
+        selectedAmount = amount;
+        ACTIVE_INPUTS.remove(player.getUniqueId(), this);
+        player.clearTitle();
+        draw();
+        open();
     }
 
     public static ClaimShopMenu getActiveInput(@NotNull UUID uuid) {
@@ -182,16 +175,14 @@ public final class ClaimShopMenu {
             }
         }
 
-        final List<ClaimShopMenuConfig.BundleItem> bundles = config.getBundles();
-        for (int i = 0; i < bundles.size(); i++) {
-            setActionItem(bundleSlot(bundles.get(i), i), bundleItemStack(bundles.get(i)));
+        for (ClaimShopMenuConfig.BundleItem bundle : config.getBundles()) {
+            setActionItem(bundle.getSlot(), bundleItemStack(bundle));
         }
 
         setItemAt(slotOf(config.getInfoItem(), INFO_SLOT), new GuiItem(infoItemStack()));
-        setActionItem(slotOf(config.getResetItem(), RESET_SLOT), defItemStack(config.getResetItem()));
         setActionItem(slotOf(config.getCustomAmountItem(), CUSTOM_AMOUNT_SLOT), defItemStack(config.getCustomAmountItem()));
         setActionItem(slotOf(config.getConfirmItem(), CONFIRM_SLOT), defItemStack(config.getConfirmItem()));
-        setActionItem(slotOf(config.getCloseItem(), CLOSE_SLOT), defItemStack(config.getCloseItem()));
+        setActionItem(slotOf(config.getCancelItem(), CANCEL_SLOT), defItemStack(config.getCancelItem()));
         gui.update();
     }
 
@@ -207,9 +198,7 @@ public final class ClaimShopMenu {
 
     private ItemStack bundleItemStack(@NotNull ClaimShopMenuConfig.BundleItem bundle) {
         final List<String> lore = bundle.getLore().stream()
-                .map(line -> line
-                        .replace("%amount%", Long.toString(bundle.getAmount()))
-                        .replace("%amount_x10%", Long.toString(bundle.getAmount() * 10)))
+                .map(line -> line.replace("%amount%", Long.toString(Math.abs(bundle.getAmount()))))
                 .toList();
         return item(resolveMaterial(bundle.getMaterial(), Material.PAPER), bundle.getName(), lore);
     }
@@ -245,11 +234,35 @@ public final class ClaimShopMenu {
         player.closeInventory();
         ACTIVE_INPUTS.put(player.getUniqueId(), this);
         locale("claim_shop_input_prompt");
-        player.getScheduler().runDelayed(plugin, task -> {
-            if (ACTIVE_INPUTS.remove(player.getUniqueId(), this)) {
-                locale("claim_shop_input_timeout");
+
+        // counts down in the action bar and title while the player types
+        final int[] remaining = {INPUT_SECONDS};
+        player.getScheduler().runAtFixedRate(plugin, task -> {
+            if (ACTIVE_INPUTS.get(player.getUniqueId()) != this) {
+                task.cancel();
+                return;
             }
-        }, null, 600L);
+            if (remaining[0] <= 0) {
+                ACTIVE_INPUTS.remove(player.getUniqueId(), this);
+                task.cancel();
+                locale("claim_shop_input_timeout");
+                showTitle("claim_shop_input_timeout_title", "claim_shop_input_timeout_subtitle");
+                return;
+            }
+            final String seconds = Integer.toString(remaining[0]--);
+            plugin.getLocales().getLocale("claim_shop_input_actionbar", seconds)
+                    .ifPresent(message -> player.sendActionBar(message.toComponent()));
+            showTitle("claim_shop_input_title", "claim_shop_input_subtitle", seconds);
+        }, null, 1L, 20L);
+    }
+
+    private void showTitle(@NotNull String titleKey, @NotNull String subtitleKey, @NotNull String... replacements) {
+        final Component title = plugin.getLocales().getLocale(titleKey, replacements)
+                .map(MineDown::toComponent).orElse(Component.empty());
+        final Component subtitle = plugin.getLocales().getLocale(subtitleKey, replacements)
+                .map(MineDown::toComponent).orElse(Component.empty());
+        player.showTitle(Title.title(title, subtitle, Title.Times.times(
+                Duration.ofMillis(500), Duration.ofSeconds(3), Duration.ofMillis(500))));
     }
 
     private void confirmPurchase() {
@@ -311,9 +324,16 @@ public final class ClaimShopMenu {
             // placeholders such as the unit price arrive with section-sign codes already applied
             final String spread = matcher.group(1);
             final String hex = spread != null ? spread.replaceAll("[&§]", "") : matcher.group(2);
-            final String tag = hex != null
-                    ? "<#" + hex + ">"
-                    : LEGACY_TAGS.getOrDefault(Character.toLowerCase(matcher.group(3).charAt(0)), matcher.group());
+            final String tag;
+            if (hex != null) {
+                tag = "<reset><#" + hex + ">";
+            } else {
+                final char code = Character.toLowerCase(matcher.group(3).charAt(0));
+                final String named = LEGACY_TAGS.get(code);
+                // a colour code clears bold, underline and the rest, a format code adds to them
+                tag = named == null ? matcher.group()
+                        : (Character.digit(code, 16) >= 0 ? "<reset>" : "") + named;
+            }
             matcher.appendReplacement(out, Matcher.quoteReplacement(tag));
         }
         matcher.appendTail(out);
